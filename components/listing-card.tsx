@@ -124,7 +124,7 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
                     />
                   ) : (
                     <>
-                      <Image src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={listing.title} fill className="object-cover" />
+                      <Image src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={listing.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                         <div className="h-12 w-12 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
                           <Play className="h-5 w-5 text-white fill-white ml-1" />
@@ -139,6 +139,10 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
                   alt={listing.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  placeholder="blur"
+                  blurDataURL="data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAQCdASoIAAYAAkA4JYgCdAEO/hPMAA"
+                  loading="lazy"
                 />
               )
             ) : (

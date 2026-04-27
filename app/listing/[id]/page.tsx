@@ -262,7 +262,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                                 />
                               ) : (
                                 <div className="absolute inset-0 cursor-pointer" onClick={() => setIsPlayingVideo(true)}>
-                                  <Image src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`} alt={listing.title} fill className="object-cover" />
+                                  <Image src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={listing.title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" priority />
                                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/10 transition-colors">
                                     <div className="h-20 w-20 rounded-full bg-red-600 flex items-center justify-center shadow-2xl">
                                       <Play className="h-9 w-9 text-white fill-white ml-1" />
@@ -279,7 +279,16 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                               exit={{ opacity: 0 }}
                               className="absolute inset-0"
                             >
-                              <Image src={currentItem.image_url} alt={listing.title} fill className="object-cover" />
+                              <Image
+                                src={currentItem.image_url}
+                                alt={listing.title}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 1024px) 100vw, 50vw"
+                                priority
+                                placeholder="blur"
+                                blurDataURL="data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAQCdASoIAAYAAkA4JYgCdAEO/hPMAA"
+                              />
                             </motion.div>
                           )
                         ) : (
@@ -323,7 +332,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                           >
                             {thumbYtId ? (
                               <>
-                                <Image src={`https://img.youtube.com/vi/${thumbYtId}/hqdefault.jpg`} alt="video" fill className="object-cover" />
+                                <Image src={`https://img.youtube.com/vi/${thumbYtId}/mqdefault.jpg`} alt="video" fill className="object-cover" sizes="80px" />
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                                   <div className="h-6 w-6 rounded-full bg-red-600 flex items-center justify-center">
                                     <Play className="h-3 w-3 text-white fill-white ml-0.5" />
@@ -331,7 +340,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                                 </div>
                               </>
                             ) : (
-                              <Image src={item.image_url} alt={`${listing.title} ${index + 1}`} fill className="object-cover" />
+                              <Image src={item.image_url} alt={`${listing.title} ${index + 1}`} fill className="object-cover" sizes="80px" loading="lazy" />
                             )}
                           </button>
                         )
