@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card'
-import { ArrowRight } from 'lucide-react'
 import useSWR from 'swr'
 import { type ListingWithImages } from '@/lib/db'
 
@@ -29,17 +28,16 @@ export function FeaturedListings() {
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10"
         >
           <div>
-            <h2 className="text-3xl font-bold">
+            <h2 className="font-serif text-4xl font-bold">
               Featured <span className="neon-gradient-text">Builds</span>
             </h2>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-foreground/55 mt-2 text-base">
               Hand-picked high-performance PCs from our marketplace
             </p>
           </div>
           <Link href="/browse">
-            <Button variant="outline" className="glass-card border-white/30 hover:bg-white/10">
+            <Button variant="outline" className="glass-card border-white/30 hover:bg-white/10 font-serif text-base rounded-xl">
               View All
-              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
         </motion.div>

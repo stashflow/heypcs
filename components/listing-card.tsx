@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/providers/auth-provider'
-import { Heart, ChevronLeft, ChevronRight, Cpu, Tv, MemoryStick } from 'lucide-react'
+import { Heart, ChevronLeft, ChevronRight } from 'lucide-react'
 import { type ListingWithImages } from '@/lib/db'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -98,8 +98,8 @@ export function ListingCard({ listing, onLikeChange }: ListingCardProps) {
                 />
               </motion.div>
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                <Tv className="h-12 w-12 text-muted-foreground/50" />
+              <div className="absolute inset-0 neon-gradient-bg opacity-10 flex items-center justify-center">
+                <span className="font-serif text-4xl text-foreground/20">PC</span>
               </div>
             )}
           </AnimatePresence>
@@ -165,33 +165,30 @@ export function ListingCard({ listing, onLikeChange }: ListingCardProps) {
         {/* Content */}
         <div className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+            <h3 className="font-serif text-base font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
-            <span className="text-lg font-bold neon-gradient-text whitespace-nowrap">
+            <span className="font-serif text-lg font-bold neon-gradient-text whitespace-nowrap">
               {formatPrice(Number(listing.price))}
             </span>
           </div>
 
-          {/* Specs */}
-          <div className="flex flex-wrap gap-2">
+          {/* Specs — clean text pills only */}
+          <div className="flex flex-wrap gap-1.5">
             {listing.cpu && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-                <Cpu className="h-3 w-3" />
-                <span className="truncate max-w-[100px]">{listing.cpu}</span>
-              </div>
+              <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">
+                {listing.cpu}
+              </span>
             )}
             {listing.gpu && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-                <Tv className="h-3 w-3" />
-                <span className="truncate max-w-[100px]">{listing.gpu}</span>
-              </div>
+              <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">
+                {listing.gpu}
+              </span>
             )}
             {listing.ram && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-                <MemoryStick className="h-3 w-3" />
-                <span>{listing.ram}</span>
-              </div>
+              <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full">
+                {listing.ram}
+              </span>
             )}
           </div>
         </div>

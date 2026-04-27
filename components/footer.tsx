@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { GlassCard } from '@/components/ui/glass-card'
-import { Github, Twitter } from 'lucide-react'
 
 export function Footer() {
   return (
@@ -13,21 +12,25 @@ export function Footer() {
           <div className="grid md:grid-cols-4 gap-8">
             {/* Brand */}
             <div className="md:col-span-2">
-              <Link href="/" className="flex items-center gap-3 mb-4">
-                <div className="relative h-10 w-10 overflow-hidden rounded-xl">
-                  <Image src="/logo.jpeg" alt="Hey PC's" fill className="object-cover" />
+              <Link href="/" className="flex items-center mb-5">
+                <div className="relative h-12 w-44">
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png"
+                    alt="Hey PC's"
+                    fill
+                    className="object-contain object-left"
+                  />
                 </div>
-                <span className="text-xl font-bold neon-gradient-text">Hey PC&apos;s</span>
               </Link>
-              <p className="text-muted-foreground max-w-sm">
-                The premier marketplace for custom PC builds. Find your perfect machine or sell your creation to the world.
+              <p className="text-foreground/55 max-w-sm text-sm leading-relaxed">
+                The premier marketplace for custom PC builds. Find your perfect machine or sell your creation.
               </p>
             </div>
 
             {/* Links */}
             <div>
-              <h4 className="font-semibold mb-4">Marketplace</h4>
-              <ul className="space-y-2 text-muted-foreground">
+              <h4 className="font-serif text-lg font-semibold mb-4">Marketplace</h4>
+              <ul className="space-y-3 text-foreground/55 text-sm">
                 <li>
                   <Link href="/browse" className="hover:text-foreground transition-colors">
                     Browse PCs
@@ -46,27 +49,20 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Social */}
+            {/* Account */}
             <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <div className="flex gap-4">
-                <a
-                  href="#"
-                  className="h-10 w-10 rounded-full glass-card flex items-center justify-center hover:bg-white/20 transition-colors"
-                >
-                  <Twitter className="h-4 w-4" />
-                </a>
-                <a
-                  href="#"
-                  className="h-10 w-10 rounded-full glass-card flex items-center justify-center hover:bg-white/20 transition-colors"
-                >
-                  <Github className="h-4 w-4" />
-                </a>
-              </div>
+              <h4 className="font-serif text-lg font-semibold mb-4">Account</h4>
+              <ul className="space-y-3 text-foreground/55 text-sm">
+                <li>
+                  <Link href="/my-listings" className="hover:text-foreground transition-colors">
+                    My Listings
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm text-muted-foreground">
+          <div className="border-t border-white/10 mt-8 pt-6 text-center text-xs text-foreground/40">
             <p>&copy; {new Date().getFullYear()} Hey PC&apos;s. All rights reserved.</p>
           </div>
         </GlassCard>

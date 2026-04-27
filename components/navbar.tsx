@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Heart, Menu, Plus, User, LogOut, Monitor } from 'lucide-react'
 import { useState } from 'react'
 import { AuthModal } from '@/components/auth-modal'
 
@@ -38,53 +37,49 @@ export function Navbar() {
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="sticky top-0 z-50 w-full"
       >
         <div className="mx-auto max-w-7xl px-4 py-4">
           <GlassCard className="px-6 py-3">
             <nav className="flex items-center justify-between">
-              {/* Logo */}
-              <Link href="/" className="flex items-center gap-3">
+
+              {/* Logo — full image with hand + "Hey PC's" text */}
+              <Link href="/" className="flex items-center">
                 <motion.div
-                  whileHover={{ scale: 1.05, rotate: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative h-10 w-10 overflow-hidden rounded-xl"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="relative h-12 w-36"
                 >
                   <Image
-                    src="/logo.jpeg"
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png"
                     alt="Hey PC's"
                     fill
-                    className="object-cover"
+                    className="object-contain object-left"
+                    priority
                   />
                 </motion.div>
-                <span className="text-xl font-bold neon-gradient-text hidden sm:block">
-                  Hey PC&apos;s
-                </span>
               </Link>
 
-              {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center gap-6">
+              {/* Desktop Navigation — clean text links, no icons */}
+              <div className="hidden md:flex items-center gap-8">
                 <Link
                   href="/browse"
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="font-serif text-lg font-semibold text-foreground/70 hover:text-foreground transition-colors hover:neon-gradient-text"
                 >
-                  <Monitor className="h-4 w-4" />
                   Browse PCs
                 </Link>
                 <Link
                   href="/sell"
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="font-serif text-lg font-semibold text-foreground/70 hover:text-foreground transition-colors"
                 >
-                  <Plus className="h-4 w-4" />
                   Sell a PC
                 </Link>
                 {user && (
                   <Link
                     href="/liked"
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="font-serif text-lg font-semibold text-foreground/70 hover:text-foreground transition-colors"
                   >
-                    <Heart className="h-4 w-4" />
                     Liked PCs
                   </Link>
                 )}
@@ -97,9 +92,11 @@ export function Navbar() {
                 ) : user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full neon-gradient-bg flex items-center justify-center">
-                          <User className="h-4 w-4 text-white" />
+                      <Button variant="ghost" className="flex items-center gap-2 font-serif text-base">
+                        <div className="h-8 w-8 rounded-full neon-gradient-bg flex items-center justify-center shrink-0">
+                          <span className="text-white text-sm font-bold">
+                            {(user.name || user.email)[0].toUpperCase()}
+                          </span>
                         </div>
                         <span className="hidden sm:block max-w-[120px] truncate">
                           {user.name || user.email.split('@')[0]}
@@ -108,44 +105,47 @@ export function Navbar() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 glass-card border-white/20">
                       <DropdownMenuItem asChild>
-                        <Link href="/my-listings" className="flex items-center gap-2">
-                          <Monitor className="h-4 w-4" />
+                        <Link href="/my-listings" className="font-serif text-base">
                           My Listings
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/liked" className="flex items-center gap-2">
-                          <Heart className="h-4 w-4" />
+                        <Link href="/liked" className="font-serif text-base">
                           Liked PCs
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => signOut()} className="text-destructive">
-                        <LogOut className="h-4 w-4 mr-2" />
+                      <DropdownMenuItem onClick={() => signOut()} className="text-destructive font-serif text-base">
                         Sign Out
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={openSignIn} className="hidden sm:inline-flex">
+                    <Button
+                      variant="ghost"
+                      onClick={openSignIn}
+                      className="hidden sm:inline-flex font-serif text-base"
+                    >
                       Sign In
                     </Button>
-                    <Button onClick={openSignUp} className="neon-gradient-bg text-white border-0">
+                    <Button
+                      onClick={openSignUp}
+                      className="neon-gradient-bg text-white border-0 font-serif text-base"
+                    >
                       Get Started
                     </Button>
                   </div>
                 )}
 
-                {/* Mobile Menu Button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden"
+                {/* Mobile Menu Toggle */}
+                <button
+                  className="md:hidden glass-card px-3 py-2 rounded-xl font-serif text-sm"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  aria-label="Toggle menu"
                 >
-                  <Menu className="h-5 w-5" />
-                </Button>
+                  {mobileMenuOpen ? 'Close' : 'Menu'}
+                </button>
               </div>
             </nav>
 
@@ -157,30 +157,27 @@ export function Navbar() {
                 exit={{ opacity: 0, height: 0 }}
                 className="md:hidden pt-4 pb-2 border-t border-white/10 mt-4"
               >
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1">
                   <Link
                     href="/browse"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="font-serif text-lg px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Monitor className="h-4 w-4" />
                     Browse PCs
                   </Link>
                   <Link
                     href="/sell"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="font-serif text-lg px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Plus className="h-4 w-4" />
                     Sell a PC
                   </Link>
                   {user && (
                     <Link
                       href="/liked"
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                      className="font-serif text-lg px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Heart className="h-4 w-4" />
                       Liked PCs
                     </Link>
                   )}

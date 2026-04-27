@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { DM_Sans, Caveat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import './globals.css'
 
-const inter = Inter({ 
+const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
+  weight: ['300', '400', '500', '600', '700'],
+})
+
+const caveat = Caveat({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -33,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="bg-background">
-      <body className={`${inter.variable} font-sans antialiased min-h-screen`}>
+      <body className={`${dmSans.variable} ${caveat.variable} font-sans antialiased min-h-screen`}>
         <AuthProvider>
           {children}
           <Toaster position="bottom-right" />
