@@ -38,8 +38,8 @@ export function Navbar() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="sticky top-0 z-50 w-full"
       >
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          <GlassCard className="px-6 py-3">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4 py-3 sm:py-4">
+          <GlassCard className="px-4 sm:px-6 py-2.5 sm:py-3">
             <nav className="flex items-center justify-between">
 
               {/* Logo — full image with hand + "Hey PC's" text */}
@@ -47,7 +47,7 @@ export function Navbar() {
                 <motion.div
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="relative h-12 w-36"
+                  className="relative h-10 w-28 sm:h-12 sm:w-36"
                 >
                   <Image
                     src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png"
