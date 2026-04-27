@@ -18,7 +18,7 @@ const caveat = Caveat({
 })
 
 export const metadata: Metadata = {
-  title: "Hey PC's - Custom PC Marketplace",
+  title: "Hey PC's",
   description: 'Find your next high-performance PC build. No scams, just quality custom PCs.',
   keywords: ['custom PC', 'gaming PC', 'PC marketplace', 'buy PC', 'sell PC'],
   icons: {
