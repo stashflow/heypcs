@@ -4,7 +4,7 @@ import { useState, use } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import { Navbar } from '@/components/navbar'
 import { GradientBlobs } from '@/components/ui/gradient-blobs'
 import { GlassCard } from '@/components/ui/glass-card'
@@ -84,6 +84,33 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
     if (!listing) return
     await toggleLike(listing.id)
     mutate()
+  }
+
+  const showPreviousMedia = () => {
+    if (!media.length) return
+    setCurrentIndex((i) => (i - 1 + media.length) % media.length)
+    setIsPlayingVideo(false)
+  }
+
+  const showNextMedia = () => {
+    if (!media.length) return
+    setCurrentIndex((i) => (i + 1) % media.length)
+    setIsPlayingVideo(false)
+  }
+
+  const handleGalleryDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!hasMultiple || isPlayingVideo) return
+
+    const swipeDistance = info.offset.x
+    const swipeVelocity = info.velocity.x
+    const swipeThreshold = 60
+    const velocityThreshold = 500
+
+    if (swipeDistance < -swipeThreshold || swipeVelocity < -velocityThreshold) {
+      showNextMedia()
+    } else if (swipeDistance > swipeThreshold || swipeVelocity > velocityThreshold) {
+      showPreviousMedia()
+    }
   }
 
   const handleDelete = async () => {
@@ -248,8 +275,14 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
               ) : (
                 <>
                   <GlassCard className="overflow-hidden">
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      className="relative aspect-[4/3] touch-pan-y"
+                      drag={hasMultiple && !isPlayingVideo ? 'x' : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.12}
+                      onDragEnd={handleGalleryDragEnd}
+                    >
+                      <AnimatePresence mode="wait">
                         {media.length > 0 ? (
                           isYoutube && ytId ? (
                             <div className="absolute inset-0">
@@ -272,7 +305,13 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                               )}
                             </div>
                           ) : (
-                            <div key={currentIndex} className="absolute inset-0 w-full h-full">
+                            <motion.div
+                              key={currentIndex}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="absolute inset-0"
+                            >
                               <Image
                                 src={currentItem.image_url}
                                 alt={listing.title}
@@ -280,8 +319,10 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                                 className="object-cover"
                                 sizes="(max-width: 1024px) 100vw, 50vw"
                                 priority
+                                placeholder="blur"
+                                blurDataURL="data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAQCdASoIAAYAAkA4JYgCdAEO/hPMAA"
                               />
-                            </div>
+                            </motion.div>
                           )
                         ) : (
                           <div className="absolute inset-0 neon-gradient-bg opacity-10 flex items-center justify-center">
@@ -293,20 +334,35 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                       {hasMultiple && (
                         <>
                           <button
-                            onClick={() => { setCurrentIndex((i) => (i - 1 + media.length) % media.length); setIsPlayingVideo(false) }}
+                            onClick={showPreviousMedia}
+                            aria-label="Previous image"
                             className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors z-10"
                           >
                             <ChevronLeft className="h-5 w-5" />
                           </button>
                           <button
-                            onClick={() => { setCurrentIndex((i) => (i + 1) % media.length); setIsPlayingVideo(false) }}
+                            onClick={showNextMedia}
+                            aria-label="Next image"
                             className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors z-10"
                           >
                             <ChevronRight className="h-5 w-5" />
                           </button>
                         </>
                       )}
-                    </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleLike}
+                        aria-label={liked ? 'Unlike this PC' : 'Like this PC'}
+                        className={cn(
+                          'absolute right-3 top-3 z-20 h-9 w-9 rounded-full border border-white/70 bg-white/90 text-foreground/70 shadow-sm backdrop-blur-md transition-all hover:bg-white',
+                          liked && 'border-red-200/70 bg-red-50/95 text-red-500'
+                        )}
+                      >
+                        <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+                      </Button>
+                    </motion.div>
                   </GlassCard>
 
                   {media.length > 1 && (
@@ -373,14 +429,6 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                   <>
                     <div className="flex min-w-0 items-start justify-between gap-3 mb-3">
                       <h1 className="min-w-0 flex-1 break-words font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">{listing.title}</h1>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleLike}
-                        className={cn('h-9 w-9 rounded-full flex-shrink-0', liked && 'bg-red-500/10 text-red-500')}
-                      >
-                        <Heart className={cn('h-5 w-5', liked && 'fill-current')} />
-                      </Button>
                     </div>
                     <div className="font-serif text-2xl sm:text-3xl font-bold neon-gradient-text mb-4 sm:mb-6">
                       {formatPrice(Number(listing.price))}
@@ -389,7 +437,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                       <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer">
                         <Button className="w-full neon-gradient-bg text-white border-0 h-11 sm:h-12 font-serif text-sm sm:text-base">
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          View on Facebook Marketplace
+                          Message on Facebook
                         </Button>
                       </a>
                     )}
