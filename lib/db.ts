@@ -22,6 +22,8 @@ export type Listing = {
   storage: string | null
   os: string | null
   facebook_url: string | null
+  is_sold: boolean
+  likes_count: number
   created_at: Date
   updated_at: Date
 }

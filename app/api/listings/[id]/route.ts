@@ -52,7 +52,25 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images } = await request.json()
+    const body = await request.json()
+    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images, is_sold } = body
+
+    // If only marking as sold, handle separately
+    if (is_sold !== undefined && title === undefined) {
+      const result = await sql`
+        UPDATE listings SET
+          is_sold = ${is_sold},
+          updated_at = NOW()
+        WHERE id = ${parseInt(id)}
+        RETURNING *
+      `
+
+      if (result.length === 0) {
+        return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+      }
+
+      return NextResponse.json({ listing: result[0] })
+    }
 
     const result = await sql`
       UPDATE listings SET
@@ -65,6 +83,7 @@ export async function PATCH(
         storage = ${storage || null},
         os = ${os || null},
         facebook_url = ${facebook_url || null},
+        is_sold = ${is_sold ?? false},
         updated_at = NOW()
       WHERE id = ${parseInt(id)}
       RETURNING *

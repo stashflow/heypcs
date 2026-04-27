@@ -11,6 +11,7 @@ import { ListingCard, ListingCardSkeleton } from '@/components/listing-card'
 import { Footer } from '@/components/footer'
 import { useAuth } from '@/components/providers/auth-provider'
 import { AuthModal } from '@/components/auth-modal'
+import { ADMIN_EMAIL } from '@/lib/constants'
 import { Loader2 } from 'lucide-react'
 import useSWR from 'swr'
 import { type ListingWithImages } from '@/lib/db'
@@ -20,14 +21,15 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 export default function MyListingsPage() {
   const { user, isLoading: authLoading } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
 
   const { data, isLoading, mutate } = useSWR<{ listings: ListingWithImages[] }>(
-    '/api/listings',
+    '/api/listings?includeSold=true',
     fetcher
   )
 
-  // Filter to only show user's listings
-  const myListings = data?.listings?.filter((l) => l.user_id === user?.id) || []
+  // Filter to only show user's listings if admin, otherwise show all
+  const myListings = isAdmin ? data?.listings || [] : data?.listings?.filter((l) => l.user_id === user?.id) || []
 
   // Show auth modal if not logged in after auth loading completes
   useEffect(() => {
@@ -114,7 +116,12 @@ export default function MyListingsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <ListingCard listing={listing} onLikeChange={() => mutate()} />
+                    <ListingCard
+                      listing={listing}
+                      onLikeChange={() => mutate()}
+                      onSoldChange={() => mutate()}
+                      showSoldButton={isAdmin}
+                    />
                   </motion.div>
                 ))
               ) : (

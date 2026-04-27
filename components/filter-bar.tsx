@@ -21,6 +21,7 @@ export interface Filters {
   cpu?: string
   gpu?: string
   ram?: string
+  includeSold?: boolean
 }
 
 export interface SpecOptions {
@@ -34,9 +35,10 @@ interface FilterBarProps {
   onFiltersChange: (filters: Filters) => void
   onSearch: () => void
   specOptions: SpecOptions
+  isAdmin?: boolean
 }
 
-export function FilterBar({ filters, onFiltersChange, onSearch, specOptions }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, onSearch, specOptions, isAdmin }: FilterBarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const updateFilter = (key: keyof Filters, value: string) => {
@@ -204,6 +206,21 @@ export function FilterBar({ filters, onFiltersChange, onSearch, specOptions }: F
                       </Select>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Sold toggle for admin */}
+              {isAdmin && (
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filters.includeSold ?? false}
+                      onChange={(e) => updateFilter('includeSold', e.target.checked ? 'true' : '')}
+                      className="w-4 h-4 rounded accent-purple-500"
+                    />
+                    <span className="font-serif text-sm text-foreground/70">Show Sold Items</span>
+                  </label>
                 </div>
               )}
             </div>

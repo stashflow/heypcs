@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const cpu = searchParams.get('cpu')
     const gpu = searchParams.get('gpu')
     const ram = searchParams.get('ram')
+    const includeSold = searchParams.get('includeSold') === 'true'
 
     const user = await getCurrentUser()
 
@@ -20,6 +21,11 @@ export async function GET(request: NextRequest) {
     const conditions: string[] = []
     const params: (string | number)[] = []
     let idx = 1
+
+    // By default, don't show sold items unless explicitly requested
+    if (!includeSold) {
+      conditions.push(`l.is_sold = false`)
+    }
 
     if (minPrice) { conditions.push(`l.price >= $${idx++}`); params.push(parseFloat(minPrice)) }
     if (maxPrice) { conditions.push(`l.price <= $${idx++}`); params.push(parseFloat(maxPrice)) }

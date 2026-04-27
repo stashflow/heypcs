@@ -14,14 +14,18 @@ import { getYoutubeId } from '@/components/image-upload'
 
 interface ListingCardProps {
   listing: ListingWithImages
+  onLikeChange?: () => void
+  onSoldChange?: () => void
+  showSoldButton?: boolean
 }
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(price)
 
-export function ListingCard({ listing }: ListingCardProps) {
+export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButton }: ListingCardProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHoveringVideo, setIsHoveringVideo] = useState(false)
+  const [isMarkingSold, setIsMarkingSold] = useState(false)
   const { isLiked, toggleLike } = useLikes()
 
   const media = listing.images || []
@@ -35,6 +39,27 @@ export function ListingCard({ listing }: ListingCardProps) {
     e.preventDefault()
     e.stopPropagation()
     await toggleLike(listing.id)
+    onLikeChange?.()
+  }
+
+  const handleMarkSold = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsMarkingSold(true)
+    try {
+      const res = await fetch(`/api/listings/${listing.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_sold: true }),
+      })
+      if (res.ok) {
+        onSoldChange?.()
+      }
+    } catch (error) {
+      console.error('Error marking as sold:', error)
+    } finally {
+      setIsMarkingSold(false)
+    }
   }
 
   const prev = (e: React.MouseEvent) => {
@@ -52,6 +77,11 @@ export function ListingCard({ listing }: ListingCardProps) {
         <GlassCard className="overflow-hidden h-full flex flex-col hover:shadow-xl hover:shadow-purple-100/40 transition-shadow">
           {/* Media */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
+            {listing.is_sold && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+                <span className="font-serif text-3xl font-bold text-white">SOLD</span>
+              </div>
+            )}
             {media.length > 0 ? (
               isYoutube && ytId ? (
                 <div
@@ -141,6 +171,18 @@ export function ListingCard({ listing }: ListingCardProps) {
               <p className="text-xs text-foreground/40 font-serif mt-auto">
                 {listing.likes_count} {listing.likes_count === 1 ? 'like' : 'likes'}
               </p>
+            )}
+
+            {showSoldButton && (
+              <Button
+                onClick={handleMarkSold}
+                disabled={isMarkingSold}
+                variant={listing.is_sold ? 'default' : 'outline'}
+                size="sm"
+                className={`mt-2 font-serif w-full ${listing.is_sold ? 'neon-gradient-bg text-white border-0' : 'border-white/30'}`}
+              >
+                {isMarkingSold ? '...' : (listing.is_sold ? '✓ Sold' : 'Mark as Sold')}
+              </Button>
             )}
           </div>
         </GlassCard>
