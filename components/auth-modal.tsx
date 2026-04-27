@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,13 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: AuthModalProps) {
   const { signIn, signUp, isLoading } = useAuth()
   const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode)
+
+  // Sync mode every time the modal opens so 'Get Started' always shows signup
+  // and 'Sign In' always shows signin, regardless of previous state
+  useEffect(() => {
+    if (isOpen) setMode(defaultMode)
+  }, [isOpen, defaultMode])
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
