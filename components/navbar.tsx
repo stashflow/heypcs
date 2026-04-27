@@ -29,11 +29,6 @@ export function Navbar() {
     setShowAuthModal(true)
   }
 
-  const openSignUp = () => {
-    setAuthMode('signup')
-    setShowAuthModal(true)
-  }
-
   return (
     <>
       <motion.header
@@ -133,12 +128,11 @@ export function Navbar() {
                     >
                       Sign In
                     </Button>
-                    <Button
-                      onClick={openSignUp}
-                      className="neon-gradient-bg text-white border-0 font-serif text-base"
-                    >
-                      Get Started
-                    </Button>
+                    <Link href="/browse">
+                      <Button className="neon-gradient-bg text-white border-0 font-serif text-base">
+                        Get Started
+                      </Button>
+                    </Link>
                   </div>
                 )}
 
