@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { sql } from '@/lib/db'
+import { SITE_NAME, SITE_URL, absoluteUrl, buildPcKeywords } from '@/lib/seo'
 import { ListingPageClient } from './listing-page-client'
 
 type ListingPageProps = {
@@ -10,11 +11,15 @@ type ListingShareData = {
   title: string
   description: string | null
   price: string | number
+  cpu: string | null
+  gpu: string | null
+  ram: string | null
+  storage: string | null
+  os: string | null
+  updated_at: Date | string | null
   image_url: string | null
   media_type: 'image' | 'youtube' | null
 }
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://heypcs.com'
 
 const getYoutubeId = (url: string) => {
   const match = url.match(
@@ -32,6 +37,12 @@ async function getListingShareData(id: string) {
       l.title,
       l.description,
       l.price,
+      l.cpu,
+      l.gpu,
+      l.ram,
+      l.storage,
+      l.os,
+      l.updated_at,
       cover.image_url,
       cover.media_type
     FROM listings l
@@ -50,17 +61,17 @@ async function getListingShareData(id: string) {
 }
 
 function getShareImage(listing: ListingShareData | null) {
-  if (!listing?.image_url) return `${siteUrl}/logo.jpeg`
+  if (!listing?.image_url) return absoluteUrl('/logo.jpeg')
   if (listing.media_type === 'youtube') {
     const youtubeId = getYoutubeId(listing.image_url)
-    return youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : `${siteUrl}/logo.jpeg`
+    return youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : absoluteUrl('/logo.jpeg')
   }
 
   return listing.image_url
 }
 
 function getDescription(listing: ListingShareData | null) {
-  if (!listing) return "Find custom gaming PCs on Hey PC's."
+  if (!listing) return `Find custom gaming PCs on ${SITE_NAME}.`
 
   const price = Number(listing.price)
   const formattedPrice = Number.isFinite(price)
@@ -68,20 +79,57 @@ function getDescription(listing: ListingShareData | null) {
     : null
   const description = listing.description?.replace(/\s+/g, ' ').trim()
 
-  return [formattedPrice, description].filter(Boolean).join(' - ') || "Find custom gaming PCs on Hey PC's."
+  return [formattedPrice, description].filter(Boolean).join(' - ') || `Find custom gaming PCs on ${SITE_NAME}.`
+}
+
+function getProductJsonLd(listing: ListingShareData, id: string) {
+  const image = getShareImage(listing)
+  const url = `${SITE_URL}/listing/${id}`
+  const price = Number(listing.price)
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: listing.title,
+    description: getDescription(listing),
+    image,
+    url,
+    brand: {
+      '@type': 'Brand',
+      name: SITE_NAME,
+    },
+    category: 'Gaming Computer',
+    additionalProperty: [
+      listing.cpu && { '@type': 'PropertyValue', name: 'CPU', value: listing.cpu },
+      listing.gpu && { '@type': 'PropertyValue', name: 'GPU', value: listing.gpu },
+      listing.ram && { '@type': 'PropertyValue', name: 'RAM', value: listing.ram },
+      listing.storage && { '@type': 'PropertyValue', name: 'Storage', value: listing.storage },
+      listing.os && { '@type': 'PropertyValue', name: 'Operating System', value: listing.os },
+    ].filter(Boolean),
+    offers: Number.isFinite(price)
+      ? {
+          '@type': 'Offer',
+          price,
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          url,
+        }
+      : undefined,
+  }
 }
 
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
   const { id } = await params
   const listing = await getListingShareData(id)
-  const title = listing ? `Hey PC's | ${listing.title}` : "Hey PC's | Listing"
+  const title = listing ? `${SITE_NAME} | ${listing.title}` : `${SITE_NAME} | Listing`
   const description = getDescription(listing)
   const image = getShareImage(listing)
-  const url = `${siteUrl}/listing/${id}`
+  const url = `${SITE_URL}/listing/${id}`
 
   return {
     title,
     description,
+    keywords: buildPcKeywords(listing),
     alternates: {
       canonical: url,
     },
@@ -93,6 +141,8 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
       images: [
         {
           url: image,
+          width: 1200,
+          height: 900,
           alt: listing?.title || "Hey PC's listing",
         },
       ],
@@ -108,5 +158,17 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const { id } = await params
-  return <ListingPageClient id={id} />
+  const listing = await getListingShareData(id)
+
+  return (
+    <>
+      {listing && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(getProductJsonLd(listing, id)) }}
+        />
+      )}
+      <ListingPageClient id={id} />
+    </>
+  )
 }
