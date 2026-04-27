@@ -94,11 +94,6 @@ export function Navbar() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 glass-card border-white/20">
                       <DropdownMenuItem asChild>
-                        <Link href="/my-listings" className="font-serif text-base">
-                          My Listings
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
                         <Link href="/liked" className="font-serif text-base">
                           Liked PCs
                         </Link>
