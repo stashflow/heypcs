@@ -26,6 +26,7 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHoveringVideo, setIsHoveringVideo] = useState(false)
   const [isMarkingSold, setIsMarkingSold] = useState(false)
+  const [dragStartX, setDragStartX] = useState(0)
   const { isLiked, toggleLike } = useLikes()
 
   const media = listing.images || []
@@ -71,12 +72,38 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
     setCurrentIndex((i) => (i + 1) % media.length)
   }
 
+  const handleDragStart = (e: React.TouchEvent | React.DragEvent) => {
+    if ('touches' in e) {
+      setDragStartX(e.touches[0].clientX)
+    }
+  }
+
+  const handleDragEnd = (e: React.TouchEvent | React.DragEvent) => {
+    let endX = 0
+    if ('changedTouches' in e) {
+      endX = e.changedTouches[0].clientX
+    }
+    const diff = dragStartX - endX
+    const threshold = 50
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        setCurrentIndex((i) => (i + 1) % media.length)
+      } else {
+        setCurrentIndex((i) => (i - 1 + media.length) % media.length)
+      }
+    }
+  }
+
   return (
     <motion.div whileHover={{ y: -4, scale: 1.01 }} transition={{ duration: 0.2 }} className="group h-full">
       <Link href={`/listing/${listing.id}`} className="block h-full">
         <GlassCard className="overflow-hidden h-full flex flex-col hover:shadow-xl hover:shadow-purple-100/40 transition-shadow">
           {/* Media */}
-          <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
+          <div 
+            className="relative aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden select-none"
+            onTouchStart={hasMultiple ? handleDragStart : undefined}
+            onTouchEnd={hasMultiple ? handleDragEnd : undefined}
+          >
             {listing.is_sold && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
                 <span className="font-serif text-3xl font-bold text-white">SOLD</span>
