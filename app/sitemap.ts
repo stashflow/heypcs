@@ -66,7 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const image = getImageUrl(listing)
 
     return {
-      url: `${SITE_URL}/listing/${listing.id}`,
+      url: `${SITE_URL}/${listing.id}`,
       lastModified: listing.updated_at ? new Date(listing.updated_at) : now,
       changeFrequency: 'daily' as const,
       priority: 0.8,

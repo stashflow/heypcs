@@ -96,7 +96,7 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
 
   return (
     <motion.div whileHover={{ y: -4, scale: 1.01 }} transition={{ duration: 0.2 }} className="group h-full">
-      <Link href={`/listing/${listing.id}`} className="block h-full">
+      <Link href={`/${listing.id}`} className="block h-full">
         <GlassCard className="overflow-hidden h-full flex flex-col hover:shadow-xl hover:shadow-purple-100/40 transition-shadow">
           {/* Media */}
           <div 

@@ -63,7 +63,7 @@ export default function SellPage() {
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed to create listing') }
       const data = await res.json()
       toast.success('Listing created!')
-      router.push(`/listing/${data.listing.id}`)
+      router.push(`/${data.listing.id}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create listing')
     } finally {
