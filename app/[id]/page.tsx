@@ -70,6 +70,10 @@ function getShareImage(listing: ListingShareData | null) {
   return listing.image_url
 }
 
+function getOpenGraphImage(id: string) {
+  return `${SITE_URL}/${id}/opengraph-image`
+}
+
 function getDescription(listing: ListingShareData | null) {
   if (!listing) return `Find custom gaming PCs on ${SITE_NAME}.`
 
@@ -83,7 +87,7 @@ function getDescription(listing: ListingShareData | null) {
 }
 
 function getProductJsonLd(listing: ListingShareData, id: string) {
-  const image = getShareImage(listing)
+  const image = getOpenGraphImage(id)
   const url = `${SITE_URL}/${id}`
   const price = Number(listing.price)
 
@@ -123,7 +127,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const listing = await getListingShareData(id)
   const title = listing ? `${SITE_NAME} | ${listing.title}` : `${SITE_NAME} | Listing`
   const description = getDescription(listing)
-  const image = getShareImage(listing)
+  const image = getOpenGraphImage(id)
   const url = `${SITE_URL}/${id}`
 
   return {
@@ -142,7 +146,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
         {
           url: image,
           width: 1200,
-          height: 900,
+          height: 630,
           alt: listing?.title || "Hey PC's listing",
         },
       ],
