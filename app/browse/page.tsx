@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Navbar } from '@/components/navbar'
 import { GradientBlobs } from '@/components/ui/gradient-blobs'
-import { FilterBar, type Filters } from '@/components/filter-bar'
+import { FilterBar, type Filters, type SpecOptions } from '@/components/filter-bar'
 import { ListingCard, ListingCardSkeleton } from '@/components/listing-card'
 import { Footer } from '@/components/footer'
 import useSWR from 'swr'
@@ -15,6 +15,8 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 export default function BrowsePage() {
   const [filters, setFilters] = useState<Filters>({})
   const [appliedFilters, setAppliedFilters] = useState<Filters>({})
+
+  const { data: specsData } = useSWR<SpecOptions>('/api/listings/specs', fetcher)
 
   const buildQueryString = useCallback((f: Filters) => {
     const params = new URLSearchParams()
@@ -74,6 +76,7 @@ export default function BrowsePage() {
               filters={filters}
               onFiltersChange={setFilters}
               onSearch={handleSearch}
+              specOptions={specsData ?? { cpus: [], gpus: [], rams: [] }}
             />
           </motion.div>
 

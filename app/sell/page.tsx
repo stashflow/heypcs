@@ -12,16 +12,21 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Footer } from '@/components/footer'
 import { MediaUpload, type MediaItem } from '@/components/image-upload'
+import { SpecInput } from '@/components/spec-input'
 import { useAuth } from '@/components/providers/auth-provider'
 import { ADMIN_EMAIL } from '@/lib/constants'
-import { Loader2, DollarSign, Cpu, Tv, MemoryStick, HardDrive, Monitor, Link as LinkIcon } from 'lucide-react'
+import { Loader2, DollarSign, Link as LinkIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import useSWR from 'swr'
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function SellPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [media, setMedia] = useState<MediaItem[]>([])
+  const { data: specsData } = useSWR('/api/listings/specs', fetcher)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -154,26 +159,58 @@ export default function SellPage() {
             <GlassCard className="p-6">
               <h2 className="font-serif text-lg font-semibold mb-4">Specifications</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                {[
-                  { id: 'cpu', label: 'CPU', icon: Cpu, placeholder: 'e.g., Intel Core i9-14900K' },
-                  { id: 'gpu', label: 'GPU', icon: Tv, placeholder: 'e.g., NVIDIA RTX 4090' },
-                  { id: 'ram', label: 'RAM', icon: MemoryStick, placeholder: 'e.g., 64GB DDR5' },
-                  { id: 'storage', label: 'Storage', icon: HardDrive, placeholder: 'e.g., 2TB NVMe SSD' },
-                ].map(({ id, label, icon: Icon, placeholder }) => (
-                  <div key={id} className="space-y-2">
-                    <Label htmlFor={id} className="font-serif">{label}</Label>
-                    <div className="relative">
-                      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
-                      <Input id={id} name={id} placeholder={placeholder} value={formData[id as keyof typeof formData]} onChange={handleInputChange} className="pl-10 glass-card border-white/20 font-serif" />
-                    </div>
-                  </div>
-                ))}
+                <div className="space-y-2">
+                  <Label htmlFor="cpu" className="font-serif">CPU</Label>
+                  <SpecInput
+                    id="cpu" name="cpu"
+                    value={formData.cpu}
+                    onChange={(v) => setFormData((p) => ({ ...p, cpu: v }))}
+                    suggestions={specsData?.cpus ?? []}
+                    placeholder="e.g., Intel Core i9-14900K"
+                    className="glass-card border-white/20 font-serif"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gpu" className="font-serif">GPU</Label>
+                  <SpecInput
+                    id="gpu" name="gpu"
+                    value={formData.gpu}
+                    onChange={(v) => setFormData((p) => ({ ...p, gpu: v }))}
+                    suggestions={specsData?.gpus ?? []}
+                    placeholder="e.g., NVIDIA RTX 4090"
+                    className="glass-card border-white/20 font-serif"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ram" className="font-serif">RAM</Label>
+                  <SpecInput
+                    id="ram" name="ram"
+                    value={formData.ram}
+                    onChange={(v) => setFormData((p) => ({ ...p, ram: v }))}
+                    suggestions={specsData?.rams ?? []}
+                    placeholder="e.g., 64GB DDR5"
+                    className="glass-card border-white/20 font-serif"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="storage" className="font-serif">Storage</Label>
+                  <Input
+                    id="storage" name="storage"
+                    placeholder="e.g., 2TB NVMe SSD"
+                    value={formData.storage}
+                    onChange={handleInputChange}
+                    className="glass-card border-white/20 font-serif"
+                  />
+                </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="os" className="font-serif">Operating System</Label>
-                  <div className="relative">
-                    <Monitor className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
-                    <Input id="os" name="os" placeholder="e.g., Windows 11 Pro" value={formData.os} onChange={handleInputChange} className="pl-10 glass-card border-white/20 font-serif" />
-                  </div>
+                  <Input
+                    id="os" name="os"
+                    placeholder="e.g., Windows 11 Pro"
+                    value={formData.os}
+                    onChange={handleInputChange}
+                    className="glass-card border-white/20 font-serif"
+                  />
                 </div>
               </div>
             </GlassCard>

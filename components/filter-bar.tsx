@@ -23,57 +23,42 @@ export interface Filters {
   ram?: string
 }
 
+export interface SpecOptions {
+  cpus: string[]
+  gpus: string[]
+  rams: string[]
+}
+
 interface FilterBarProps {
   filters: Filters
   onFiltersChange: (filters: Filters) => void
   onSearch: () => void
+  specOptions: SpecOptions
 }
 
-const cpuOptions = [
-  'Intel Core i9',
-  'Intel Core i7',
-  'Intel Core i5',
-  'AMD Ryzen 9',
-  'AMD Ryzen 7',
-  'AMD Ryzen 5',
-]
-
-const gpuOptions = [
-  'NVIDIA RTX 4090',
-  'NVIDIA RTX 4080',
-  'NVIDIA RTX 4070',
-  'NVIDIA RTX 3080',
-  'NVIDIA RTX 3070',
-  'AMD RX 7900',
-  'AMD RX 7800',
-]
-
-const ramOptions = ['8GB', '16GB', '32GB', '64GB', '128GB']
-
-export function FilterBar({ filters, onFiltersChange, onSearch }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, onSearch, specOptions }: FilterBarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const updateFilter = (key: keyof Filters, value: string) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value || undefined,
-    })
+    onFiltersChange({ ...filters, [key]: value || undefined })
   }
 
-  const clearFilters = () => {
-    onFiltersChange({})
-  }
+  const clearFilters = () => onFiltersChange({})
 
   const hasActiveFilters = Object.values(filters).some(Boolean)
 
+  const hasAnySpecs =
+    specOptions.cpus.length > 0 ||
+    specOptions.gpus.length > 0 ||
+    specOptions.rams.length > 0
+
   return (
     <GlassCard className="p-4">
-      {/* Toggle Row */}
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 font-serif"
         >
           <SlidersHorizontal className="h-4 w-4" />
           <span>Filters</span>
@@ -86,19 +71,18 @@ export function FilterBar({ filters, onFiltersChange, onSearch }: FilterBarProps
 
         <div className="flex items-center gap-2">
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="font-serif">
               <X className="h-4 w-4 mr-1" />
               Clear
             </Button>
           )}
-          <Button onClick={onSearch} className="neon-gradient-bg text-white border-0">
+          <Button onClick={onSearch} className="neon-gradient-bg text-white border-0 font-serif">
             <Search className="h-4 w-4 mr-2" />
             Search
           </Button>
         </div>
       </div>
 
-      {/* Expanded Filters */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -108,89 +92,120 @@ export function FilterBar({ filters, onFiltersChange, onSearch }: FilterBarProps
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="pt-4 mt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* Price Range */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Min Price</Label>
-                <Input
-                  type="number"
-                  placeholder="$0"
-                  value={filters.minPrice || ''}
-                  onChange={(e) => updateFilter('minPrice', e.target.value)}
-                  className="glass-card border-white/20"
-                />
+            <div className="pt-4 mt-4 border-t border-white/20">
+              {/* Price always shown */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2">
+                  <Label className="font-serif text-sm text-foreground/60">Min Price</Label>
+                  <Input
+                    type="number"
+                    placeholder="$0"
+                    value={filters.minPrice || ''}
+                    onChange={(e) => updateFilter('minPrice', e.target.value)}
+                    className="glass-card border-white/20 font-serif"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-serif text-sm text-foreground/60">Max Price</Label>
+                  <Input
+                    type="number"
+                    placeholder="No limit"
+                    value={filters.maxPrice || ''}
+                    onChange={(e) => updateFilter('maxPrice', e.target.value)}
+                    className="glass-card border-white/20 font-serif"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Max Price</Label>
-                <Input
-                  type="number"
-                  placeholder="$10,000"
-                  value={filters.maxPrice || ''}
-                  onChange={(e) => updateFilter('maxPrice', e.target.value)}
-                  className="glass-card border-white/20"
-                />
-              </div>
+              {/* Spec filters — only shown if listings exist with those specs */}
+              {!hasAnySpecs ? (
+                <p className="font-serif text-sm text-foreground/40 text-center py-2">
+                  Spec filters will appear once PCs are listed.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {specOptions.cpus.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="font-serif text-sm text-foreground/60">CPU</Label>
+                      <Select
+                        value={filters.cpu || ''}
+                        onValueChange={(v) => updateFilter('cpu', v === '__all__' ? '' : v)}
+                      >
+                        <SelectTrigger className="glass-card border-white/20 font-serif">
+                          <SelectValue placeholder="Any CPU" />
+                        </SelectTrigger>
+                        <SelectContent
+                          className="font-serif rounded-xl border-white/20"
+                          style={{
+                            background: 'rgba(255,255,255,0.97)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 8px 32px rgba(138,75,255,0.15)',
+                          }}
+                        >
+                          <SelectItem value="__all__">Any CPU</SelectItem>
+                          {specOptions.cpus.map((cpu) => (
+                            <SelectItem key={cpu} value={cpu}>{cpu}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-              {/* CPU */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">CPU</Label>
-                <Select
-                  value={filters.cpu || ''}
-                  onValueChange={(value) => updateFilter('cpu', value)}
-                >
-                  <SelectTrigger className="glass-card border-white/20">
-                    <SelectValue placeholder="Any CPU" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/20">
-                    {cpuOptions.map((cpu) => (
-                      <SelectItem key={cpu} value={cpu}>
-                        {cpu}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {specOptions.gpus.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="font-serif text-sm text-foreground/60">GPU</Label>
+                      <Select
+                        value={filters.gpu || ''}
+                        onValueChange={(v) => updateFilter('gpu', v === '__all__' ? '' : v)}
+                      >
+                        <SelectTrigger className="glass-card border-white/20 font-serif">
+                          <SelectValue placeholder="Any GPU" />
+                        </SelectTrigger>
+                        <SelectContent
+                          className="font-serif rounded-xl border-white/20"
+                          style={{
+                            background: 'rgba(255,255,255,0.97)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 8px 32px rgba(138,75,255,0.15)',
+                          }}
+                        >
+                          <SelectItem value="__all__">Any GPU</SelectItem>
+                          {specOptions.gpus.map((gpu) => (
+                            <SelectItem key={gpu} value={gpu}>{gpu}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-              {/* GPU */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">GPU</Label>
-                <Select
-                  value={filters.gpu || ''}
-                  onValueChange={(value) => updateFilter('gpu', value)}
-                >
-                  <SelectTrigger className="glass-card border-white/20">
-                    <SelectValue placeholder="Any GPU" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/20">
-                    {gpuOptions.map((gpu) => (
-                      <SelectItem key={gpu} value={gpu}>
-                        {gpu}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* RAM */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">RAM</Label>
-                <Select
-                  value={filters.ram || ''}
-                  onValueChange={(value) => updateFilter('ram', value)}
-                >
-                  <SelectTrigger className="glass-card border-white/20">
-                    <SelectValue placeholder="Any RAM" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/20">
-                    {ramOptions.map((ram) => (
-                      <SelectItem key={ram} value={ram}>
-                        {ram}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {specOptions.rams.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="font-serif text-sm text-foreground/60">RAM</Label>
+                      <Select
+                        value={filters.ram || ''}
+                        onValueChange={(v) => updateFilter('ram', v === '__all__' ? '' : v)}
+                      >
+                        <SelectTrigger className="glass-card border-white/20 font-serif">
+                          <SelectValue placeholder="Any RAM" />
+                        </SelectTrigger>
+                        <SelectContent
+                          className="font-serif rounded-xl border-white/20"
+                          style={{
+                            background: 'rgba(255,255,255,0.97)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 8px 32px rgba(138,75,255,0.15)',
+                          }}
+                        >
+                          <SelectItem value="__all__">Any RAM</SelectItem>
+                          {specOptions.rams.map((ram) => (
+                            <SelectItem key={ram} value={ram}>{ram}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
