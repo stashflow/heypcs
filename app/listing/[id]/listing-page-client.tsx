@@ -36,6 +36,7 @@ import {
   MessageCircle,
   MapPin,
   Share2,
+  ShieldCheck,
 } from 'lucide-react'
 import useSWR from 'swr'
 import { type ListingWithImages } from '@/lib/db'
@@ -487,6 +488,10 @@ export function ListingPageClient({ id }: { id: string }) {
                         Based in {listing.location_city || 'Marietta'}, GA {listing.location_zip || '30067'}
                         {listing.is_mobile ? ' • mobile' : ''}
                       </span>
+                    </div>
+                    <div className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-200/60 bg-emerald-50/70 px-3 py-2 text-sm font-serif text-emerald-700">
+                      <ShieldCheck className="h-4 w-4 shrink-0" />
+                      <span>Includes a 7 day warranty</span>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
                       {listing.facebook_url && (

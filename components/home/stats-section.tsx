@@ -31,7 +31,7 @@ export function StatsSection() {
                 </span>
                 <p className="font-serif text-xl font-semibold text-foreground/80">
                   <span className="neon-gradient-text font-bold text-2xl">{listingCount}</span>
-                  {' '}custom {listingCount === 1 ? 'build' : 'builds'} available right now
+                  {' '}available right now
                 </p>
               </div>
             </GlassCard>

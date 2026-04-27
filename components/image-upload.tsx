@@ -59,7 +59,7 @@ function YoutubeThumbnail({ url, isSelected }: { url: string; isSelected: boolea
   )
 }
 
-export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps) {
+export function MediaUpload({ items, onChange, maxItems = 9 }: MediaUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [youtubeInput, setYoutubeInput] = useState('')

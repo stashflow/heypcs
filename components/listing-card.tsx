@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Heart, ChevronLeft, ChevronRight, Play, Copy } from 'lucide-react'
+import { Heart, ChevronLeft, ChevronRight, Play, Copy, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { type ListingWithImages } from '@/lib/db'
 import { useLikes } from '@/hooks/use-likes'
@@ -232,6 +232,10 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
               {listing.gpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.gpu}</span>}
               {listing.cpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.cpu}</span>}
               {listing.ram && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full">{listing.ram}</span>}
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-serif text-foreground/55">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              <span>7 day warranty</span>
             </div>
             {listing.likes_count > 0 && (
               <p className="text-xs text-foreground/40 font-serif mt-auto">
