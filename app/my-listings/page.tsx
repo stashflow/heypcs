@@ -11,7 +11,8 @@ import { ListingCard, ListingCardSkeleton } from '@/components/listing-card'
 import { Footer } from '@/components/footer'
 import { useAuth } from '@/components/providers/auth-provider'
 import { AuthModal } from '@/components/auth-modal'
-import { Monitor, Plus, Loader2 } from 'lucide-react'
+import { ADMIN_EMAIL } from '@/lib/constants'
+import { Plus, Loader2 } from 'lucide-react'
 import useSWR from 'swr'
 import { type ListingWithImages } from '@/lib/db'
 
@@ -19,6 +20,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function MyListingsPage() {
   const { user, isLoading: authLoading } = useAuth()
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const { data, isLoading, mutate } = useSWR<{ listings: ListingWithImages[] }>(
@@ -64,21 +66,16 @@ export default function MyListingsPage() {
             className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
           >
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="h-10 w-10 rounded-full neon-gradient-bg flex items-center justify-center">
-                  <Monitor className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-3xl sm:text-4xl font-bold">
-                  My <span className="neon-gradient-text">Listings</span>
-                </h1>
-              </div>
-              <p className="text-muted-foreground">
-                {user ? 'Manage your PC listings' : 'Sign in to see your listings'}
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold mb-1">
+                My <span className="neon-gradient-text">Listings</span>
+              </h1>
+              <p className="text-foreground/50 font-serif">
+                {user ? 'All PC listings in the marketplace' : 'Sign in to see your listings'}
               </p>
             </div>
-            {user && (
+            {isAdmin && (
               <Link href="/sell">
-                <Button className="neon-gradient-bg text-white border-0">
+                <Button className="neon-gradient-bg text-white border-0 font-serif">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Listing
                 </Button>
@@ -93,14 +90,14 @@ export default function MyListingsPage() {
               transition={{ delay: 0.1 }}
             >
               <GlassCard className="p-12 text-center">
-                <Monitor className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Sign in to see your listings</h3>
-                <p className="text-muted-foreground mb-6">
-                  Create and manage your PC listings by signing in
+                <p className="font-serif text-5xl font-bold neon-gradient-text mb-4">Hi</p>
+                <h3 className="font-serif text-xl font-semibold mb-2">Sign in to continue</h3>
+                <p className="text-foreground/50 font-serif mb-6">
+                  Sign in to view and manage listings
                 </p>
                 <Button
                   onClick={() => setShowAuthModal(true)}
-                  className="neon-gradient-bg text-white border-0"
+                  className="neon-gradient-bg text-white border-0 font-serif"
                 >
                   Sign In
                 </Button>
@@ -137,17 +134,19 @@ export default function MyListingsPage() {
                   className="col-span-full"
                 >
                   <GlassCard className="p-12 text-center">
-                    <Monitor className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No listings yet</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Create your first PC listing and start selling
+                    <p className="font-serif text-5xl font-bold neon-gradient-text mb-4">Empty</p>
+                    <h3 className="font-serif text-xl font-semibold mb-2">No listings yet</h3>
+                    <p className="text-foreground/50 font-serif mb-6">
+                      No PCs have been listed yet
                     </p>
-                    <Link href="/sell">
-                      <Button className="neon-gradient-bg text-white border-0">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Your First Listing
-                      </Button>
-                    </Link>
+                    {isAdmin && (
+                      <Link href="/sell">
+                        <Button className="neon-gradient-bg text-white border-0 font-serif">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Your First Listing
+                        </Button>
+                      </Link>
+                    )}
                   </GlassCard>
                 </motion.div>
               )}

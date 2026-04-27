@@ -1,6 +1,9 @@
-import { sql, type ListingWithImages } from '@/lib/db'
+import { neon } from '@neondatabase/serverless'
 import { getCurrentUser, isAdmin } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
+import { type ListingWithImages } from '@/lib/db'
+
+const sql = neon(process.env.DATABASE_URL!, { fullResults: true })
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,12 +13,28 @@ export async function GET(request: NextRequest) {
     const cpu = searchParams.get('cpu')
     const gpu = searchParams.get('gpu')
     const ram = searchParams.get('ram')
-    
+
     const user = await getCurrentUser()
-    
-    // Build dynamic query
-    let query = `
-      SELECT 
+
+    // Build conditions array
+    const conditions: string[] = []
+    const params: (string | number)[] = []
+    let idx = 1
+
+    if (minPrice) { conditions.push(`l.price >= $${idx++}`); params.push(parseFloat(minPrice)) }
+    if (maxPrice) { conditions.push(`l.price <= $${idx++}`); params.push(parseFloat(maxPrice)) }
+    if (cpu)      { conditions.push(`LOWER(l.cpu) LIKE $${idx++}`); params.push(`%${cpu.toLowerCase()}%`) }
+    if (gpu)      { conditions.push(`LOWER(l.gpu) LIKE $${idx++}`); params.push(`%${gpu.toLowerCase()}%`) }
+    if (ram)      { conditions.push(`LOWER(l.ram) LIKE $${idx++}`); params.push(`%${ram.toLowerCase()}%`) }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    const isLikedCol = user
+      ? `, EXISTS(SELECT 1 FROM likes WHERE listing_id = l.id AND user_id = ${user.id}) as is_liked`
+      : `, false as is_liked`
+
+    const query = `
+      SELECT
         l.*,
         u.email as user_email,
         COALESCE(
@@ -26,53 +45,18 @@ export async function GET(request: NextRequest) {
           '[]'::json
         ) as images,
         (SELECT COUNT(*) FROM likes WHERE listing_id = l.id) as like_count
-        ${user ? `, EXISTS(SELECT 1 FROM likes WHERE listing_id = l.id AND user_id = ${user.id}) as is_liked` : ''}
+        ${isLikedCol}
       FROM listings l
       LEFT JOIN users u ON l.user_id = u.id
-      WHERE 1=1
+      ${whereClause}
+      ORDER BY l.created_at DESC
     `
-    
-    const params: (string | number)[] = []
-    let paramIndex = 1
-    
-    if (minPrice) {
-      query += ` AND l.price >= $${paramIndex}`
-      params.push(parseFloat(minPrice))
-      paramIndex++
-    }
-    
-    if (maxPrice) {
-      query += ` AND l.price <= $${paramIndex}`
-      params.push(parseFloat(maxPrice))
-      paramIndex++
-    }
-    
-    if (cpu) {
-      query += ` AND LOWER(l.cpu) LIKE $${paramIndex}`
-      params.push(`%${cpu.toLowerCase()}%`)
-      paramIndex++
-    }
-    
-    if (gpu) {
-      query += ` AND LOWER(l.gpu) LIKE $${paramIndex}`
-      params.push(`%${gpu.toLowerCase()}%`)
-      paramIndex++
-    }
-    
-    if (ram) {
-      query += ` AND LOWER(l.ram) LIKE $${paramIndex}`
-      params.push(`%${ram.toLowerCase()}%`)
-      paramIndex++
-    }
-    
-    query += ` ORDER BY l.created_at DESC`
-    
-    // Execute raw query with dynamic filters
+
     const listings = await sql.query(query, params)
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       listings: listings.rows as ListingWithImages[],
-      count: listings.rows.length
+      count: listings.rows.length,
     })
   } catch (error) {
     console.error('Error fetching listings:', error)
@@ -83,7 +67,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
-    
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -91,23 +75,21 @@ export async function POST(request: NextRequest) {
     if (!isAdmin(user.email)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    
+
     const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images } = await request.json()
-    
+
     if (!title || !price) {
       return NextResponse.json({ error: 'Title and price are required' }, { status: 400 })
     }
-    
-    // Create the listing
+
     const result = await sql`
       INSERT INTO listings (user_id, title, description, price, cpu, gpu, ram, storage, os, facebook_url)
       VALUES (${user.id}, ${title}, ${description || null}, ${price}, ${cpu || null}, ${gpu || null}, ${ram || null}, ${storage || null}, ${os || null}, ${facebook_url || null})
       RETURNING *
     `
-    
+
     const listing = result[0]
-    
-    // Add images if provided
+
     if (images && images.length > 0) {
       for (let i = 0; i < images.length; i++) {
         await sql`
@@ -116,7 +98,7 @@ export async function POST(request: NextRequest) {
         `
       }
     }
-    
+
     return NextResponse.json({ listing })
   } catch (error) {
     console.error('Error creating listing:', error)
