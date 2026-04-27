@@ -182,37 +182,37 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
       <GradientBlobs />
       <Navbar />
 
-      <main className="py-8 px-4">
+      <main className="py-4 sm:py-8 px-3 sm:px-4">
         <div className="max-w-6xl mx-auto">
 
           {/* Back + Admin Controls */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-6 flex items-center justify-between flex-wrap gap-3">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-4 sm:mb-6 flex items-center justify-between flex-wrap gap-2">
             <Link href="/browse">
-              <Button variant="ghost" className="gap-2 font-serif">
+              <Button variant="ghost" size="sm" className="gap-1.5 font-serif text-sm">
                 <ArrowLeft className="h-4 w-4" />
-                Back to Browse
+                Back
               </Button>
             </Link>
 
             {isAdmin && !isEditing && (
               <div className="flex items-center gap-2">
-                <Button variant="outline" className="gap-2 glass-card border-white/30 hover:bg-white/10 font-serif" onClick={handleStartEdit}>
-                  <Pencil className="h-4 w-4" />
+                <Button size="sm" variant="outline" className="gap-1.5 glass-card border-white/30 hover:bg-white/10 font-serif text-sm" onClick={handleStartEdit}>
+                  <Pencil className="h-3.5 w-3.5" />
                   Edit
                 </Button>
                 {!showDeleteConfirm ? (
-                  <Button variant="outline" className="gap-2 glass-card border-red-300/40 text-red-500 hover:bg-red-50/20 font-serif" onClick={() => setShowDeleteConfirm(true)}>
-                    <Trash2 className="h-4 w-4" />
+                  <Button size="sm" variant="outline" className="gap-1.5 glass-card border-red-300/40 text-red-500 hover:bg-red-50/20 font-serif text-sm" onClick={() => setShowDeleteConfirm(true)}>
+                    <Trash2 className="h-3.5 w-3.5" />
                     Delete
                   </Button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-foreground/60 font-serif">Are you sure?</span>
-                    <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white border-0 gap-1 font-serif" onClick={handleDelete} disabled={isDeleting}>
+                    <span className="text-xs text-foreground/60 font-serif hidden sm:inline">Are you sure?</span>
+                    <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white border-0 gap-1 font-serif text-xs" onClick={handleDelete} disabled={isDeleting}>
                       {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-                      Delete
+                      Confirm
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setShowDeleteConfirm(false)}>
                       <X className="h-3 w-3" />
                     </Button>
                   </div>
@@ -222,23 +222,23 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
 
             {isAdmin && isEditing && (
               <div className="flex items-center gap-2">
-                <Button variant="outline" className="gap-2 glass-card border-white/30 hover:bg-white/10 font-serif" onClick={() => setIsEditing(false)}>
-                  <X className="h-4 w-4" />
+                <Button size="sm" variant="outline" className="gap-1.5 glass-card border-white/30 hover:bg-white/10 font-serif text-sm" onClick={() => setIsEditing(false)}>
+                  <X className="h-3.5 w-3.5" />
                   Cancel
                 </Button>
-                <Button className="gap-2 neon-gradient-bg text-white border-0 font-serif" onClick={handleSaveEdit} disabled={isSaving}>
-                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                <Button size="sm" className="gap-1.5 neon-gradient-bg text-white border-0 font-serif text-sm" onClick={handleSaveEdit} disabled={isSaving}>
+                  {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                   Save
                 </Button>
               </div>
             )}
           </motion.div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-4 sm:gap-8">
             {/* Left — Media Gallery */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
               {isEditing ? (
-                <GlassCard className="p-4">
+                <GlassCard className="p-3 sm:p-4">
                   <h2 className="font-serif text-base font-semibold mb-3">Images & Videos</h2>
                   <MediaUpload
                     items={editForm.mediaItems || []}
@@ -343,16 +343,16 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
             </motion.div>
 
             {/* Right — Details */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-3 sm:space-y-6">
               {/* Title, Price & Actions */}
-              <GlassCard className="p-6">
+              <GlassCard className="p-4 sm:p-6">
                 {isEditing ? (
                   <div className="space-y-3 mb-4">
                     <Input
                       value={editForm.title ?? ''}
                       onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
                       placeholder="Title"
-                      className="glass-card border-white/30 font-serif text-lg font-semibold"
+                      className="glass-card border-white/30 font-serif text-base font-semibold"
                     />
                     <Input
                       type="number"
@@ -370,30 +370,30 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <h1 className="font-serif text-2xl sm:text-3xl font-bold">{listing.title}</h1>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">{listing.title}</h1>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={handleLike}
-                        className={cn('h-10 w-10 rounded-full flex-shrink-0', liked && 'bg-red-500/10 text-red-500')}
+                        className={cn('h-9 w-9 rounded-full flex-shrink-0', liked && 'bg-red-500/10 text-red-500')}
                       >
                         <Heart className={cn('h-5 w-5', liked && 'fill-current')} />
                       </Button>
                     </div>
-                    <div className="font-serif text-3xl font-bold neon-gradient-text mb-6">
+                    <div className="font-serif text-2xl sm:text-3xl font-bold neon-gradient-text mb-4 sm:mb-6">
                       {formatPrice(Number(listing.price))}
                     </div>
                     {listing.facebook_url && (
                       <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer">
-                        <Button className="w-full neon-gradient-bg text-white border-0 h-12 font-serif">
+                        <Button className="w-full neon-gradient-bg text-white border-0 h-11 sm:h-12 font-serif text-sm sm:text-base">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           View on Facebook Marketplace
                         </Button>
                       </a>
                     )}
                     {listing.likes_count > 0 && (
-                      <p className="text-sm text-foreground/50 mt-4 font-serif">
+                      <p className="text-xs sm:text-sm text-foreground/50 mt-3 font-serif">
                         {listing.likes_count} {listing.likes_count === 1 ? 'person likes' : 'people like'} this
                       </p>
                     )}
@@ -402,8 +402,8 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
               </GlassCard>
 
               {/* Specs */}
-              <GlassCard className="p-6">
-                <h2 className="font-serif text-lg font-semibold mb-4">Specifications</h2>
+              <GlassCard className="p-4 sm:p-6">
+                <h2 className="font-serif text-base sm:text-lg font-semibold mb-3 sm:mb-4">Specifications</h2>
                 {isEditing ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {specFields.map(({ key, label }) => (
@@ -436,8 +436,8 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
 
               {/* Description */}
               {(listing.description || isEditing) && (
-                <GlassCard className="p-6">
-                  <h2 className="font-serif text-lg font-semibold mb-4">Description</h2>
+                <GlassCard className="p-4 sm:p-6">
+                  <h2 className="font-serif text-base sm:text-lg font-semibold mb-3 sm:mb-4">Description</h2>
                   {isEditing ? (
                     <Textarea
                       value={editForm.description ?? ''}
@@ -447,7 +447,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                       className="glass-card border-white/30 font-serif resize-none"
                     />
                   ) : (
-                    <p className="text-foreground/70 font-serif whitespace-pre-wrap leading-relaxed">{listing.description}</p>
+                    <p className="text-sm sm:text-base text-foreground/70 font-serif whitespace-pre-wrap leading-relaxed">{listing.description}</p>
                   )}
                 </GlassCard>
               )}

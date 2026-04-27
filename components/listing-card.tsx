@@ -162,10 +162,10 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
                 {formatPrice(Number(listing.price))}
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {listing.cpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">{listing.cpu}</span>}
-              {listing.gpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">{listing.gpu}</span>}
-              {listing.ram && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full">{listing.ram}</span>}
+            <div className="flex flex-wrap gap-1.5 min-w-0">
+              {listing.cpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.cpu}</span>}
+              {listing.gpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.gpu}</span>}
+              {listing.ram && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full">{listing.ram}</span>}
             </div>
             {listing.likes_count > 0 && (
               <p className="text-xs text-foreground/40 font-serif mt-auto">

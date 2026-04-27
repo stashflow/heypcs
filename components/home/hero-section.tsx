@@ -39,7 +39,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-balance leading-tight mb-5"
+          className="font-serif text-4xl sm:text-5xl lg:text-7xl font-bold text-balance leading-tight mb-5"
         >
           Find Your{' '}
           <span className="neon-gradient-text">Next PC.</span>

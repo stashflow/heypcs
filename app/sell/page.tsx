@@ -111,10 +111,10 @@ export default function SellPage() {
     <div className="min-h-screen relative">
       <GradientBlobs />
       <Navbar />
-      <main className="py-8 px-4">
+      <main className="py-4 sm:py-8 px-3 sm:px-4">
         <div className="max-w-3xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold mb-3">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6 sm:mb-10">
+            <h1 className="font-serif text-2xl sm:text-4xl font-bold mb-3">
               Create a <span className="neon-gradient-text">Listing</span>
             </h1>
             <p className="text-foreground/50 font-serif">Add a new PC build to the marketplace</p>
