@@ -248,8 +248,8 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
               ) : (
                 <>
                   <GlassCard className="overflow-hidden">
-                    <div className="relative aspect-[4/3]">
-                      <AnimatePresence mode="wait">
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <AnimatePresence mode="wait" initial={false}>
                         {media.length > 0 ? (
                           isYoutube && ytId ? (
                             <div className="absolute inset-0">
@@ -272,13 +272,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                               )}
                             </div>
                           ) : (
-                            <motion.div
-                              key={currentIndex}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              className="absolute inset-0"
-                            >
+                            <div key={currentIndex} className="absolute inset-0 w-full h-full">
                               <Image
                                 src={currentItem.image_url}
                                 alt={listing.title}
@@ -286,10 +280,8 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                                 className="object-cover"
                                 sizes="(max-width: 1024px) 100vw, 50vw"
                                 priority
-                                placeholder="blur"
-                                blurDataURL="data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAQCdASoIAAYAAkA4JYgCdAEO/hPMAA"
                               />
-                            </motion.div>
+                            </div>
                           )
                         ) : (
                           <div className="absolute inset-0 neon-gradient-bg opacity-10 flex items-center justify-center">
