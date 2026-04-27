@@ -118,11 +118,12 @@ export function Navbar() {
                     >
                       Sign In
                     </Button>
-                    <Link href="/browse">
-                      <Button className="neon-gradient-bg text-white border-0 font-serif text-base">
-                        Get Started
-                      </Button>
-                    </Link>
+                    <Button
+                      onClick={() => { setAuthMode('signup'); setShowAuthModal(true) }}
+                      className="neon-gradient-bg text-white border-0 font-serif text-base"
+                    >
+                      Get Started
+                    </Button>
                   </div>
                 )}
 

@@ -41,8 +41,8 @@ export function HeroSection() {
           transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-balance leading-tight mb-5"
         >
-          Find Your{' '}
-          <span className="neon-gradient-text">Next PC</span>
+          Premium{' '}
+          <span className="neon-gradient-text">Gaming Machines</span>
         </motion.h1>
 
         {/* Subtitle */}
@@ -52,8 +52,8 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-lg sm:text-xl text-foreground/55 max-w-xl mx-auto mb-10 text-pretty leading-relaxed"
         >
-          High-performance custom builds you can trust.
-          Quality machines, curated with care.
+          Handcrafted, high-performance custom PCs built to dominate.
+          Every machine tested, every build trusted.
         </motion.p>
 
         {/* CTA */}
