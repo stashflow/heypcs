@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `
 
-    const listing = result[0]
+    const listing = result.rows[0]
 
     // images is now an array of { url, type } objects (MediaItem)
     if (images && images.length > 0) {
