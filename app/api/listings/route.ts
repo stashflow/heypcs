@@ -1,5 +1,5 @@
 import { sql, type ListingWithImages } from '@/lib/db'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, isAdmin } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -86,6 +86,10 @@ export async function POST(request: NextRequest) {
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!isAdmin(user.email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
     
     const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images } = await request.json()

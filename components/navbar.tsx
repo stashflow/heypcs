@@ -15,9 +15,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { AuthModal } from '@/components/auth-modal'
+import { ADMIN_EMAIL } from '@/lib/auth'
 
 export function Navbar() {
   const { user, signOut, isLoading } = useAuth()
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -69,12 +71,14 @@ export function Navbar() {
                 >
                   Browse PCs
                 </Link>
-                <Link
-                  href="/sell"
-                  className="font-serif text-lg font-semibold text-foreground/70 hover:text-foreground transition-colors"
-                >
-                  Sell a PC
-                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/sell"
+                    className="font-serif text-lg font-semibold text-foreground/70 hover:text-foreground transition-colors"
+                  >
+                    Sell a PC
+                  </Link>
+                )}
                 {user && (
                   <Link
                     href="/liked"
@@ -165,13 +169,15 @@ export function Navbar() {
                   >
                     Browse PCs
                   </Link>
-                  <Link
-                    href="/sell"
-                    className="font-serif text-lg px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Sell a PC
-                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/sell"
+                      className="font-serif text-lg px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sell a PC
+                    </Link>
+                  )}
                   {user && (
                     <Link
                       href="/liked"

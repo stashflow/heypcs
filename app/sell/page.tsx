@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Footer } from '@/components/footer'
 import { ImageUpload } from '@/components/image-upload'
 import { useAuth } from '@/components/providers/auth-provider'
-import { AuthModal } from '@/components/auth-modal'
+import { ADMIN_EMAIL } from '@/lib/auth'
 import {
   Loader2,
   DollarSign,
@@ -26,10 +26,11 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+const ADMIN = ADMIN_EMAIL
+
 export default function SellPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const [formData, setFormData] = useState({
@@ -53,11 +54,6 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!user) {
-      setShowAuthModal(true)
-      return
-    }
 
     if (!formData.title.trim()) {
       toast.error('Please enter a title')
@@ -97,6 +93,8 @@ export default function SellPage() {
     }
   }
 
+  const isAdmin = user?.email?.toLowerCase() === ADMIN.toLowerCase()
+
   if (authLoading) {
     return (
       <div className="min-h-screen relative">
@@ -107,6 +105,38 @@ export default function SellPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         </main>
+      </div>
+    )
+  }
+
+  // Non-admin users (or logged-out) see a 404-style block
+  if (!authLoading && (!user || !isAdmin)) {
+    return (
+      <div className="min-h-screen relative">
+        <GradientBlobs />
+        <Navbar />
+        <main className="py-8 px-4 flex items-center justify-center min-h-[70vh]">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center max-w-md"
+          >
+            <GlassCard className="p-12">
+              <p className="font-serif text-5xl font-bold neon-gradient-text mb-4">404</p>
+              <h1 className="font-serif text-2xl font-semibold mb-3">Page not found</h1>
+              <p className="text-foreground/50 mb-8 text-sm leading-relaxed">
+                This page doesn&apos;t exist or you don&apos;t have access to it.
+              </p>
+              <Button
+                onClick={() => router.push('/browse')}
+                className="neon-gradient-bg text-white border-0 font-serif"
+              >
+                Browse PCs
+              </Button>
+            </GlassCard>
+          </motion.div>
+        </main>
+        <Footer />
       </div>
     )
   }
@@ -132,26 +162,7 @@ export default function SellPage() {
             </p>
           </motion.div>
 
-          {!user && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mb-8"
-            >
-              <GlassCard className="p-6 text-center">
-                <p className="text-muted-foreground mb-4">
-                  You need to sign in to create a listing
-                </p>
-                <Button
-                  onClick={() => setShowAuthModal(true)}
-                  className="neon-gradient-bg text-white border-0"
-                >
-                  Sign In to Continue
-                </Button>
-              </GlassCard>
-            </motion.div>
-          )}
+
 
           {/* Form */}
           <motion.form
@@ -325,7 +336,7 @@ export default function SellPage() {
             {/* Submit */}
             <Button
               type="submit"
-              disabled={isSubmitting || !user}
+              disabled={isSubmitting}
               className="w-full h-12 text-base neon-gradient-bg text-white border-0"
             >
               {isSubmitting ? (
@@ -342,12 +353,6 @@ export default function SellPage() {
       </main>
 
       <Footer />
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        defaultMode="signup"
-      />
     </div>
   )
 }
