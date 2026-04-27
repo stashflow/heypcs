@@ -178,12 +178,12 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
   const specs = specFields.filter((s) => listing[s.key])
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative overflow-x-clip">
       <GradientBlobs />
       <Navbar />
 
       <main className="py-4 sm:py-8 px-3 sm:px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto min-w-0">
 
           {/* Back + Admin Controls */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-4 sm:mb-6 flex items-center justify-between flex-wrap gap-2">
@@ -234,9 +234,9 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
             )}
           </motion.div>
 
-          <div className="grid lg:grid-cols-2 gap-4 sm:gap-8">
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-8 lg:grid-cols-2">
             {/* Left — Media Gallery */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="min-w-0 space-y-3">
               {isEditing ? (
                 <GlassCard className="p-3 sm:p-4">
                   <h2 className="font-serif text-base font-semibold mb-3">Images & Videos</h2>
@@ -310,7 +310,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                   </GlassCard>
 
                   {media.length > 1 && (
-                    <div className="flex gap-2 overflow-x-auto pb-2">
+                    <div className="flex max-w-full gap-2 overflow-x-auto pb-2">
                       {media.map((item, index) => {
                         const thumbYtId = item.media_type === 'youtube' ? getYoutubeId(item.image_url) : null
                         return (
@@ -344,7 +344,7 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
             </motion.div>
 
             {/* Right — Details */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-3 sm:space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="min-w-0 space-y-3 sm:space-y-6">
               {/* Title, Price & Actions */}
               <GlassCard className="p-4 sm:p-6">
                 {isEditing ? (
@@ -371,8 +371,8 @@ export default function ListingPage({ params }: { params: Promise<{ id: string }
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">{listing.title}</h1>
+                    <div className="flex min-w-0 items-start justify-between gap-3 mb-3">
+                      <h1 className="min-w-0 flex-1 break-words font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">{listing.title}</h1>
                       <Button
                         variant="ghost"
                         size="icon"
