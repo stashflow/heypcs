@@ -26,36 +26,29 @@ export function useLikes() {
 
   const isLiked = useCallback((id: number) => liked.has(id), [liked])
 
-  const toggleLike = useCallback(async (listingId: number, currentCount: number) => {
-    if (pending.has(listingId)) return currentCount
+  const toggleLike = useCallback(async (listingId: number): Promise<void> => {
+    if (pending.has(listingId)) return
 
     setPending(p => new Set(p).add(listingId))
 
     const alreadyLiked = liked.has(listingId)
-    const newLiked = new Set(liked)
+    const next = new Set(liked)
+    if (alreadyLiked) next.delete(listingId)
+    else next.add(listingId)
 
-    if (alreadyLiked) {
-      newLiked.delete(listingId)
-    } else {
-      newLiked.add(listingId)
-    }
-
-    setLiked(newLiked)
-    saveStoredLikes(newLiked)
+    setLiked(next)
+    saveStoredLikes(next)
 
     try {
-      const res = await fetch('/api/likes', {
-        method: alreadyLiked ? 'DELETE' : 'POST',
+      await fetch('/api/likes', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing_id: listingId }),
+        body: JSON.stringify({ listing_id: listingId, action: alreadyLiked ? 'unlike' : 'like' }),
       })
-      const data = await res.json()
-      return data.likes_count ?? (alreadyLiked ? currentCount - 1 : currentCount + 1)
     } catch {
-      // Revert on error
+      // revert on error
       setLiked(liked)
       saveStoredLikes(liked)
-      return currentCount
     } finally {
       setPending(p => { const n = new Set(p); n.delete(listingId); return n })
     }

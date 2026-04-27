@@ -44,14 +44,14 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Account */}
+            {/* Contact */}
             <div>
-              <h4 className="font-serif text-lg font-semibold mb-4">Account</h4>
+              <h4 className="font-serif text-lg font-semibold mb-4">Contact</h4>
               <ul className="space-y-3 text-foreground/55 text-sm">
                 <li>
-                  <Link href="/my-listings" className="hover:text-foreground transition-colors">
-                    My Listings
-                  </Link>
+                  <a href="mailto:ejdarkbark17@gmail.com" className="hover:text-foreground transition-colors">
+                    Get in Touch
+                  </a>
                 </li>
               </ul>
             </div>

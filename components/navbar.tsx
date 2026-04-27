@@ -15,12 +15,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { AuthModal } from '@/components/auth-modal'
+import { ADMIN_EMAIL } from '@/lib/constants'
 
 export function Navbar() {
   const { user, signOut, isLoading } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
 
   const openSignIn = () => {
     setAuthMode('signin')
@@ -93,6 +96,13 @@ export function Navbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 glass-card border-white/20">
+                      {isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/my-listings" className="font-serif text-base">
+                            My Listings
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem asChild>
                         <Link href="/liked" className="font-serif text-base">
                           Liked PCs

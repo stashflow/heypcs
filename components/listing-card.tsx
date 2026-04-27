@@ -3,197 +3,149 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/components/providers/auth-provider'
-import { Heart, ChevronLeft, ChevronRight } from 'lucide-react'
-import { type ListingWithImages } from '@/lib/db'
-import { toast } from 'sonner'
+import { Heart, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { type ListingWithImages } from '@/lib/db'
+import { useLikes } from '@/hooks/use-likes'
+import { getYoutubeId } from '@/components/image-upload'
 
 interface ListingCardProps {
   listing: ListingWithImages
-  onLikeChange?: () => void
 }
 
-export function ListingCard({ listing, onLikeChange }: ListingCardProps) {
-  const { user } = useAuth()
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isLiked, setIsLiked] = useState(listing.is_liked ?? false)
-  const [isLiking, setIsLiking] = useState(false)
-  
-  const images = listing.images || []
-  const hasMultipleImages = images.length > 1
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(price)
 
-  const nextImage = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setCurrentImageIndex((prev) => (prev + 1) % images.length)
-  }
+export function ListingCard({ listing }: ListingCardProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isHoveringVideo, setIsHoveringVideo] = useState(false)
+  const { isLiked, toggleLike } = useLikes()
 
-  const prevImage = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
-  }
+  const media = listing.images || []
+  const hasMultiple = media.length > 1
+  const liked = isLiked(listing.id)
+  const currentItem = media[currentIndex]
+  const isYoutube = currentItem?.media_type === 'youtube'
+  const ytId = isYoutube ? getYoutubeId(currentItem.image_url) : null
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
-    if (!user) {
-      toast.error('Please sign in to like listings')
-      return
-    }
-
-    setIsLiking(true)
-    try {
-      const res = await fetch('/api/likes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listingId: listing.id }),
-      })
-      
-      if (res.ok) {
-        const data = await res.json()
-        setIsLiked(data.liked)
-        onLikeChange?.()
-      }
-    } catch {
-      toast.error('Failed to update like')
-    } finally {
-      setIsLiking(false)
-    }
+    await toggleLike(listing.id)
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(price)
+  const prev = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    setCurrentIndex((i) => (i - 1 + media.length) % media.length)
+  }
+  const next = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    setCurrentIndex((i) => (i + 1) % media.length)
   }
 
   return (
-    <Link href={`/listing/${listing.id}`}>
-      <GlassCard hover glow className="overflow-hidden group">
-        {/* Image Carousel */}
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <AnimatePresence mode="wait">
-            {images.length > 0 ? (
-              <motion.div
-                key={currentImageIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="absolute inset-0"
-              >
+    <motion.div whileHover={{ y: -4, scale: 1.01 }} transition={{ duration: 0.2 }} className="group h-full">
+      <Link href={`/listing/${listing.id}`} className="block h-full">
+        <GlassCard className="overflow-hidden h-full flex flex-col hover:shadow-xl hover:shadow-purple-100/40 transition-shadow">
+          {/* Media */}
+          <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
+            {media.length > 0 ? (
+              isYoutube && ytId ? (
+                <div
+                  className="absolute inset-0"
+                  onMouseEnter={() => setIsHoveringVideo(true)}
+                  onMouseLeave={() => setIsHoveringVideo(false)}
+                >
+                  {isHoveringVideo ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&rel=0&controls=0`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; encrypted-media"
+                    />
+                  ) : (
+                    <>
+                      <Image src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={listing.title} fill className="object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="h-12 w-12 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                          <Play className="h-5 w-5 text-white fill-white ml-1" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
                 <Image
-                  src={images[currentImageIndex].image_url}
+                  src={currentItem.image_url}
                   alt={listing.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-              </motion.div>
+              )
             ) : (
               <div className="absolute inset-0 neon-gradient-bg opacity-10 flex items-center justify-center">
                 <span className="font-serif text-4xl text-foreground/20">PC</span>
               </div>
             )}
-          </AnimatePresence>
 
-          {/* Image Navigation */}
-          {hasMultipleImages && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-              
-              {/* Image Indicators */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setCurrentImageIndex(index)
-                    }}
-                    className={cn(
-                      'w-1.5 h-1.5 rounded-full transition-all',
-                      index === currentImageIndex
-                        ? 'bg-white w-3'
-                        : 'bg-white/50 hover:bg-white/75'
-                    )}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Like Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleLike}
-            disabled={isLiking}
-            className={cn(
-              'absolute top-3 right-3 h-9 w-9 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-all',
-              isLiked && 'bg-red-500/80 hover:bg-red-500'
+            {/* Carousel nav */}
+            {hasMultiple && (
+              <>
+                <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                  {media.map((_, i) => (
+                    <div key={i} className={cn('h-1.5 rounded-full transition-all', i === currentIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50')} />
+                  ))}
+                </div>
+              </>
             )}
-          >
-            <Heart
+
+            {/* Like button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLike}
               className={cn(
-                'h-4 w-4 transition-all',
-                isLiked ? 'fill-white text-white' : 'text-white'
+                'absolute top-3 right-3 h-9 w-9 rounded-full bg-white/80 backdrop-blur-sm border border-white/40 z-10',
+                'opacity-0 group-hover:opacity-100 transition-all duration-200',
+                liked && 'opacity-100 bg-red-50/90 border-red-200/40'
               )}
-            />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-serif text-base font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-              {listing.title}
-            </h3>
-            <span className="font-serif text-lg font-bold neon-gradient-text whitespace-nowrap">
-              {formatPrice(Number(listing.price))}
-            </span>
+            >
+              <Heart className={cn('h-4 w-4 transition-colors', liked ? 'fill-red-500 text-red-500' : 'text-foreground/60')} />
+            </Button>
           </div>
 
-          {/* Specs — clean text pills only */}
-          <div className="flex flex-wrap gap-1.5">
-            {listing.cpu && (
-              <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">
-                {listing.cpu}
+          {/* Info */}
+          <div className="p-4 flex flex-col gap-2 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-serif text-base font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                {listing.title}
+              </h3>
+              <span className="font-serif text-lg font-bold neon-gradient-text whitespace-nowrap">
+                {formatPrice(Number(listing.price))}
               </span>
-            )}
-            {listing.gpu && (
-              <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">
-                {listing.gpu}
-              </span>
-            )}
-            {listing.ram && (
-              <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full">
-                {listing.ram}
-              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {listing.cpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">{listing.cpu}</span>}
+              {listing.gpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full truncate max-w-[110px]">{listing.gpu}</span>}
+              {listing.ram && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2.5 py-1 rounded-full">{listing.ram}</span>}
+            </div>
+            {listing.likes_count > 0 && (
+              <p className="text-xs text-foreground/40 font-serif mt-auto">
+                {listing.likes_count} {listing.likes_count === 1 ? 'like' : 'likes'}
+              </p>
             )}
           </div>
-        </div>
-      </GlassCard>
-    </Link>
+        </GlassCard>
+      </Link>
+    </motion.div>
   )
 }
 
@@ -202,14 +154,13 @@ export function ListingCardSkeleton() {
     <GlassCard className="overflow-hidden">
       <div className="aspect-[4/3] bg-muted animate-pulse" />
       <div className="p-4 space-y-3">
-        <div className="flex justify-between">
-          <div className="h-5 w-2/3 bg-muted rounded animate-pulse" />
-          <div className="h-5 w-16 bg-muted rounded animate-pulse" />
+        <div className="flex justify-between gap-2">
+          <div className="h-4 bg-muted rounded animate-pulse flex-1" />
+          <div className="h-4 bg-muted rounded animate-pulse w-16" />
         </div>
         <div className="flex gap-2">
-          <div className="h-6 w-20 bg-muted rounded-full animate-pulse" />
-          <div className="h-6 w-20 bg-muted rounded-full animate-pulse" />
-          <div className="h-6 w-16 bg-muted rounded-full animate-pulse" />
+          <div className="h-6 bg-muted rounded-full animate-pulse w-24" />
+          <div className="h-6 bg-muted rounded-full animate-pulse w-20" />
         </div>
       </div>
     </GlassCard>

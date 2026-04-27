@@ -39,12 +39,12 @@ export async function GET(request: NextRequest) {
         u.email as user_email,
         COALESCE(
           (SELECT json_agg(
-            json_build_object('id', i.id, 'image_url', i.image_url, 'display_order', i.display_order)
+            json_build_object('id', i.id, 'image_url', i.image_url, 'media_type', i.media_type, 'display_order', i.display_order)
             ORDER BY i.display_order
           ) FROM images i WHERE i.listing_id = l.id),
           '[]'::json
         ) as images,
-        (SELECT COUNT(*) FROM likes WHERE listing_id = l.id) as like_count
+        l.likes_count
         ${isLikedCol}
       FROM listings l
       LEFT JOIN users u ON l.user_id = u.id
@@ -90,11 +90,15 @@ export async function POST(request: NextRequest) {
 
     const listing = result[0]
 
+    // images is now an array of { url, type } objects (MediaItem)
     if (images && images.length > 0) {
       for (let i = 0; i < images.length; i++) {
+        const item = images[i]
+        const url = typeof item === 'string' ? item : item.url
+        const mediaType = typeof item === 'string' ? 'image' : (item.type || 'image')
         await sql`
-          INSERT INTO images (listing_id, image_url, display_order)
-          VALUES (${listing.id}, ${images[i]}, ${i})
+          INSERT INTO images (listing_id, image_url, media_type, display_order)
+          VALUES (${listing.id}, ${url}, ${mediaType}, ${i})
         `
       }
     }

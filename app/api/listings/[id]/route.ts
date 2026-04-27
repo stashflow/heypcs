@@ -17,12 +17,12 @@ export async function GET(
         u.email as user_email,
         COALESCE(
           (SELECT json_agg(
-            json_build_object('id', i.id, 'image_url', i.image_url, 'display_order', i.display_order)
+            json_build_object('id', i.id, 'image_url', i.image_url, 'media_type', i.media_type, 'display_order', i.display_order)
             ORDER BY i.display_order
           ) FROM images i WHERE i.listing_id = l.id),
           '[]'::json
         ) as images,
-        (SELECT COUNT(*) FROM likes WHERE listing_id = l.id) as like_count
+        l.likes_count
         ${user ? sql`, EXISTS(SELECT 1 FROM likes WHERE listing_id = l.id AND user_id = ${user.id}) as is_liked` : sql`, false as is_liked`}
       FROM listings l
       LEFT JOIN users u ON l.user_id = u.id
@@ -52,7 +52,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url } = await request.json()
+    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images } = await request.json()
 
     const result = await sql`
       UPDATE listings SET
@@ -74,7 +74,37 @@ export async function PATCH(
       return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ listing: result[0] })
+    // Replace images if provided
+    if (images !== undefined) {
+      await sql`DELETE FROM images WHERE listing_id = ${parseInt(id)}`
+      if (images && images.length > 0) {
+        for (let i = 0; i < images.length; i++) {
+          const item = images[i]
+          const url = typeof item === 'string' ? item : item.url
+          const mediaType = typeof item === 'string' ? 'image' : (item.type || item.media_type || 'image')
+          await sql`
+            INSERT INTO images (listing_id, image_url, media_type, display_order)
+            VALUES (${parseInt(id)}, ${url}, ${mediaType}, ${i})
+          `
+        }
+      }
+    }
+
+    // Return updated listing with images
+    const updated = await sql`
+      SELECT l.*,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object('id', i.id, 'image_url', i.image_url, 'media_type', i.media_type, 'display_order', i.display_order)
+            ORDER BY i.display_order
+          ) FROM images i WHERE i.listing_id = l.id),
+          '[]'::json
+        ) as images,
+        l.likes_count
+      FROM listings l WHERE l.id = ${parseInt(id)}
+    `
+
+    return NextResponse.json({ listing: updated[0] })
   } catch (error) {
     console.error('Error updating listing:', error)
     return NextResponse.json({ error: 'Failed to update listing' }, { status: 500 })

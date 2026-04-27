@@ -26,19 +26,21 @@ export type Listing = {
   updated_at: Date
 }
 
-export type ListingWithImages = Listing & {
-  images: Image[]
-  user_email?: string
-  is_liked?: boolean
-  like_count?: number
-}
-
 export type Image = {
   id: number
   listing_id: number
   image_url: string
+  media_type: 'image' | 'youtube'
   display_order: number
   created_at: Date
+}
+
+export type ListingWithImages = Listing & {
+  images: Image[]
+  likes_count: number
+  user_email?: string
+  is_liked?: boolean
+  like_count?: number
 }
 
 export type Like = {

@@ -1,73 +1,29 @@
-import { sql, type ListingWithImages } from '@/lib/db'
-import { getCurrentUser } from '@/lib/auth'
-import { NextRequest, NextResponse } from 'next/server'
+import { neon } from '@neondatabase/serverless'
+import { NextResponse } from 'next/server'
 
-export async function GET() {
-  try {
-    const user = await getCurrentUser()
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    
-    const listings = await sql`
-      SELECT 
-        l.*,
-        u.email as user_email,
-        COALESCE(
-          (SELECT json_agg(
-            json_build_object('id', i.id, 'image_url', i.image_url, 'display_order', i.display_order)
-            ORDER BY i.display_order
-          ) FROM images i WHERE i.listing_id = l.id),
-          '[]'::json
-        ) as images,
-        (SELECT COUNT(*) FROM likes WHERE listing_id = l.id) as like_count,
-        true as is_liked
-      FROM listings l
-      LEFT JOIN users u ON l.user_id = u.id
-      INNER JOIN likes lk ON lk.listing_id = l.id AND lk.user_id = ${user.id}
-      ORDER BY lk.created_at DESC
-    `
-    
-    return NextResponse.json({ listings: listings as ListingWithImages[] })
-  } catch (error) {
-    console.error('Error fetching liked listings:', error)
-    return NextResponse.json({ error: 'Failed to fetch liked listings' }, { status: 500 })
-  }
-}
+const sql = neon(process.env.DATABASE_URL!)
 
-export async function POST(request: NextRequest) {
+// POST — toggle like (anonymous, no auth needed)
+export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser()
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { listing_id, action } = await request.json()
+
+    if (!listing_id || !['like', 'unlike'].includes(action)) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
-    
-    const { listingId } = await request.json()
-    
-    if (!listingId) {
-      return NextResponse.json({ error: 'Listing ID is required' }, { status: 400 })
-    }
-    
-    // Check if already liked
-    const existing = await sql`
-      SELECT id FROM likes WHERE user_id = ${user.id} AND listing_id = ${listingId}
+
+    const delta = action === 'like' ? 1 : -1
+
+    const result = await sql`
+      UPDATE listings
+      SET likes_count = GREATEST(0, likes_count + ${delta})
+      WHERE id = ${listing_id}
+      RETURNING likes_count
     `
-    
-    if (existing.length > 0) {
-      // Unlike
-      await sql`DELETE FROM likes WHERE user_id = ${user.id} AND listing_id = ${listingId}`
-      return NextResponse.json({ liked: false })
-    } else {
-      // Like
-      await sql`
-        INSERT INTO likes (user_id, listing_id) VALUES (${user.id}, ${listingId})
-      `
-      return NextResponse.json({ liked: true })
-    }
+
+    return NextResponse.json({ likes_count: result[0]?.likes_count ?? 0 })
   } catch (error) {
-    console.error('Error toggling like:', error)
-    return NextResponse.json({ error: 'Failed to toggle like' }, { status: 500 })
+    console.error('Likes error:', error)
+    return NextResponse.json({ error: 'Failed to update like' }, { status: 500 })
   }
 }
