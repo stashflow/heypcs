@@ -501,7 +501,7 @@ export function ListingPageClient({ id }: { id: string }) {
                         type="button"
                         variant="outline"
                         onClick={handleShare}
-                        className="h-12 glass-card border-white/30 font-serif"
+                        className="h-12 glass-card border-white/30 font-serif text-foreground hover:bg-white/55 hover:text-foreground"
                       >
                         <Share2 className="h-4 w-4 mr-2" />
                         Share

@@ -181,18 +181,24 @@ export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps)
 
       {/* Media preview grid */}
       {items.length > 0 && (
-        <Reorder.Group axis="x" values={items} onReorder={onChange} className="flex flex-wrap gap-3">
+        <div className="space-y-2">
+          <p className="text-xs text-foreground/45 font-serif">
+            Drag tiles left or right to reorder. The first tile is the cover used on cards and shared links.
+          </p>
+        <Reorder.Group axis="x" values={items} onReorder={onChange} className="flex gap-3 overflow-x-auto pb-2">
           <AnimatePresence>
             {items.map((item, index) => (
               <Reorder.Item
                 key={item.url}
                 value={item}
+                dragListener
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
+                className="shrink-0"
               >
                 <div className="relative group">
-                  <GlassCard className="overflow-hidden w-24 h-24 cursor-grab active:cursor-grabbing">
+                  <GlassCard className="overflow-hidden w-28 h-32 cursor-grab active:cursor-grabbing select-none">
                     <div className="absolute inset-0">
                       {item.type === 'youtube' ? (
                         <div className="relative w-full h-full">
@@ -214,8 +220,9 @@ export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps)
                         <Image src={item.url} alt={`Upload ${index + 1}`} fill className="object-cover" />
                       )}
                     </div>
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <GripVertical className="h-5 w-5 text-white" />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute left-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm">
+                      <GripVertical className="h-4 w-4" />
                     </div>
                     {index === 0 && (
                       <div className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] font-serif font-medium bg-primary text-white rounded">
@@ -226,7 +233,7 @@ export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps)
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); makeCover(index) }}
-                        className="absolute bottom-1 left-1 rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-serif font-medium text-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                        className="absolute bottom-1 left-1 rounded bg-white/95 px-1.5 py-0.5 text-[10px] font-serif font-medium text-foreground shadow-sm"
                       >
                         Make cover
                       </button>
@@ -236,21 +243,21 @@ export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps)
                         YT
                       </div>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); remove(index) }}
+                      className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-sm"
+                      aria-label="Delete media"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </GlassCard>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    type="button"
-                    onClick={() => remove(index)}
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
                 </div>
               </Reorder.Item>
             ))}
           </AnimatePresence>
         </Reorder.Group>
+        </div>
       )}
 
       {items.length === 0 && (
