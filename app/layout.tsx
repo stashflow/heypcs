@@ -25,6 +25,25 @@ export const metadata: Metadata = {
     icon: '/logo.jpeg',
     apple: '/logo.jpeg',
   },
+  openGraph: {
+    title: "Hey PC's",
+    description: 'Find your next high-performance PC build. No scams, just quality custom PCs.',
+    type: 'website',
+    images: [
+      {
+        url: '/logo.jpeg',
+        width: 1200,
+        height: 630,
+        alt: "Hey PC's - Custom PC Marketplace",
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Hey PC's",
+    description: 'Find your next high-performance PC build. No scams, just quality custom PCs.',
+    images: ['/logo.jpeg'],
+  },
 }
 
 export const viewport: Viewport = {
