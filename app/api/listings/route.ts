@@ -5,8 +5,26 @@ import { type ListingWithImages } from '@/lib/db'
 
 const sql = neon(process.env.DATABASE_URL!, { fullResults: true })
 
+async function ensureListingColumns() {
+  await sql.query(`
+    ALTER TABLE listings
+      ADD COLUMN IF NOT EXISTS listing_status VARCHAR(20) DEFAULT 'available',
+      ADD COLUMN IF NOT EXISTS location_city VARCHAR(120) DEFAULT 'Marietta',
+      ADD COLUMN IF NOT EXISTS location_zip VARCHAR(20) DEFAULT '30067',
+      ADD COLUMN IF NOT EXISTS is_mobile BOOLEAN DEFAULT true
+  `)
+  await sql.query(`
+    UPDATE listings
+    SET listing_status = CASE WHEN is_sold THEN 'sold' ELSE COALESCE(listing_status, 'available') END,
+        location_city = COALESCE(location_city, 'Marietta'),
+        location_zip = COALESCE(location_zip, '30067'),
+        is_mobile = COALESCE(is_mobile, true)
+  `)
+}
+
 export async function GET(request: NextRequest) {
   try {
+    await ensureListingColumns()
     const searchParams = request.nextUrl.searchParams
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
@@ -24,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // By default, don't show sold items unless explicitly requested
     if (!includeSold) {
-      conditions.push(`l.is_sold = false`)
+      conditions.push(`COALESCE(l.listing_status, CASE WHEN l.is_sold THEN 'sold' ELSE 'available' END) != 'sold'`)
     }
 
     if (minPrice) { conditions.push(`l.price >= $${idx++}`); params.push(parseFloat(minPrice)) }
@@ -82,15 +100,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images } = await request.json()
+    await ensureListingColumns()
+
+    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images, listing_status, location_city, location_zip, is_mobile } = await request.json()
 
     if (!title || !price) {
       return NextResponse.json({ error: 'Title and price are required' }, { status: 400 })
     }
 
     const result = await sql`
-      INSERT INTO listings (user_id, title, description, price, cpu, gpu, ram, storage, os, facebook_url)
-      VALUES (${user.id}, ${title}, ${description || null}, ${price}, ${cpu || null}, ${gpu || null}, ${ram || null}, ${storage || null}, ${os || null}, ${facebook_url || null})
+      INSERT INTO listings (user_id, title, description, price, cpu, gpu, ram, storage, os, facebook_url, listing_status, location_city, location_zip, is_mobile, is_sold)
+      VALUES (${user.id}, ${title}, ${description || null}, ${price}, ${cpu || null}, ${gpu || null}, ${ram || null}, ${storage || null}, ${os || null}, ${facebook_url || null}, ${listing_status || 'available'}, ${location_city || 'Marietta'}, ${location_zip || '30067'}, ${is_mobile ?? true}, ${(listing_status || 'available') === 'sold'})
       RETURNING *
     `
 

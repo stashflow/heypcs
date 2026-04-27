@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS listings (
   storage VARCHAR(255),
   os VARCHAR(100),
   facebook_url TEXT,
+  listing_status VARCHAR(20) DEFAULT 'available' CHECK (listing_status IN ('available', 'pending', 'sold')),
+  location_city VARCHAR(120) DEFAULT 'Marietta',
+  location_zip VARCHAR(20) DEFAULT '30067',
+  is_mobile BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

@@ -3,11 +3,29 @@ import { getCurrentUser, isAdmin } from '@/lib/auth'
 import { type ListingWithImages } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
+async function ensureListingColumns() {
+  await sql`
+    ALTER TABLE listings
+      ADD COLUMN IF NOT EXISTS listing_status VARCHAR(20) DEFAULT 'available',
+      ADD COLUMN IF NOT EXISTS location_city VARCHAR(120) DEFAULT 'Marietta',
+      ADD COLUMN IF NOT EXISTS location_zip VARCHAR(20) DEFAULT '30067',
+      ADD COLUMN IF NOT EXISTS is_mobile BOOLEAN DEFAULT true
+  `
+  await sql`
+    UPDATE listings
+    SET listing_status = CASE WHEN is_sold THEN 'sold' ELSE COALESCE(listing_status, 'available') END,
+        location_city = COALESCE(location_city, 'Marietta'),
+        location_zip = COALESCE(location_zip, '30067'),
+        is_mobile = COALESCE(is_mobile, true)
+  `
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureListingColumns()
     const { id } = await params
     const user = await getCurrentUser()
 
@@ -53,13 +71,17 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images, is_sold } = body
+    await ensureListingColumns()
+
+    const { title, description, price, cpu, gpu, ram, storage, os, facebook_url, images, is_sold, listing_status, location_city, location_zip, is_mobile } = body
+    const nextStatus = listing_status || (is_sold === true ? 'sold' : is_sold === false ? 'available' : undefined)
 
     // If only marking as sold, handle separately
-    if (is_sold !== undefined && title === undefined) {
+    if ((is_sold !== undefined || listing_status !== undefined) && title === undefined) {
       const result = await sql`
         UPDATE listings SET
-          is_sold = ${is_sold},
+          listing_status = ${nextStatus || 'available'},
+          is_sold = ${(nextStatus || 'available') === 'sold'},
           updated_at = NOW()
         WHERE id = ${parseInt(id)}
         RETURNING *
@@ -83,7 +105,11 @@ export async function PATCH(
         storage = ${storage || null},
         os = ${os || null},
         facebook_url = ${facebook_url || null},
-        is_sold = ${is_sold ?? false},
+        listing_status = COALESCE(${nextStatus || null}, listing_status, 'available'),
+        location_city = COALESCE(${location_city || null}, location_city, 'Marietta'),
+        location_zip = COALESCE(${location_zip || null}, location_zip, '30067'),
+        is_mobile = COALESCE(${is_mobile ?? null}, is_mobile, true),
+        is_sold = COALESCE(${nextStatus || null}, listing_status, 'available') = 'sold',
         updated_at = NOW()
       WHERE id = ${parseInt(id)}
       RETURNING *

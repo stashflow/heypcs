@@ -22,6 +22,10 @@ export type Listing = {
   storage: string | null
   os: string | null
   facebook_url: string | null
+  listing_status: 'available' | 'pending' | 'sold'
+  location_city: string | null
+  location_zip: string | null
+  is_mobile: boolean
   is_sold: boolean
   likes_count: number
   created_at: Date

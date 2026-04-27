@@ -109,6 +109,13 @@ export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps)
   }
 
   const remove = (index: number) => onChange(items.filter((_, i) => i !== index))
+  const makeCover = (index: number) => {
+    if (index === 0) return
+    const next = [...items]
+    const [cover] = next.splice(index, 1)
+    onChange([cover, ...next])
+    toast.success('Cover image updated')
+  }
 
   return (
     <div className="space-y-4">
@@ -214,6 +221,15 @@ export function MediaUpload({ items, onChange, maxItems = 8 }: MediaUploadProps)
                       <div className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] font-serif font-medium bg-primary text-white rounded">
                         Cover
                       </div>
+                    )}
+                    {index !== 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); makeCover(index) }}
+                        className="absolute bottom-1 left-1 rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-serif font-medium text-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                      >
+                        Make cover
+                      </button>
                     )}
                     {item.type === 'youtube' && (
                       <div className="absolute top-1 right-1 px-1 py-0.5 text-[10px] font-serif bg-red-600 text-white rounded">

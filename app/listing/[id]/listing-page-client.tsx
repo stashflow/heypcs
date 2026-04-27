@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Footer } from '@/components/footer'
 import { MediaUpload, type MediaItem, getYoutubeId } from '@/components/image-upload'
+import { ListingCard } from '@/components/listing-card'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useLikes } from '@/hooks/use-likes'
 import { ADMIN_EMAIL } from '@/lib/constants'
@@ -33,6 +34,8 @@ import {
   HardDrive,
   Monitor,
   MessageCircle,
+  MapPin,
+  Share2,
 } from 'lucide-react'
 import useSWR from 'swr'
 import { type ListingWithImages } from '@/lib/db'
@@ -72,6 +75,7 @@ export function ListingPageClient({ id }: { id: string }) {
       },
     }
   )
+  const { data: relatedData } = useSWR<{ listings: ListingWithImages[] }>('/api/listings', fetcher)
 
   const listing = data?.listing
   const media = listing?.images || []
@@ -80,6 +84,7 @@ export function ListingPageClient({ id }: { id: string }) {
   const currentItem = media[currentIndex]
   const isYoutube = currentItem?.media_type === 'youtube'
   const ytId = isYoutube ? getYoutubeId(currentItem.image_url) : null
+  const relatedListings = (relatedData?.listings || []).filter((item) => item.id !== listing?.id).slice(0, 3)
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(price)
@@ -88,6 +93,20 @@ export function ListingPageClient({ id }: { id: string }) {
     if (!listing) return
     await toggleLike(listing.id)
     mutate()
+  }
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/${id}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: listing?.title || "Hey PC's listing", url })
+      } else {
+        await navigator.clipboard.writeText(url)
+        toast.success('Listing link copied')
+      }
+    } catch {
+      // User cancelled native sharing.
+    }
   }
 
   const showPreviousMedia = () => {
@@ -462,14 +481,32 @@ export function ListingPageClient({ id }: { id: string }) {
                     <div className="font-serif text-2xl sm:text-3xl font-bold neon-gradient-text mb-4">
                       {formatPrice(Number(listing.price))}
                     </div>
-                    {listing.facebook_url && (
-                      <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer">
-                        <Button className="h-12 w-full border-0 neon-gradient-bg font-serif text-base text-white shadow-lg shadow-purple-200/40 transition-shadow hover:shadow-purple-300/50">
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          Message on Facebook
-                        </Button>
-                      </a>
-                    )}
+                    <div className="mb-4 flex items-center gap-2 text-sm text-foreground/55">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span>
+                        Based in {listing.location_city || 'Marietta'}, GA {listing.location_zip || '30067'}
+                        {listing.is_mobile ? ' • mobile' : ''}
+                      </span>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                      {listing.facebook_url && (
+                        <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer">
+                          <Button className="h-12 w-full border-0 neon-gradient-bg font-serif text-base text-white shadow-lg shadow-purple-200/40 transition-shadow hover:shadow-purple-300/50">
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Message Seller
+                          </Button>
+                        </a>
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleShare}
+                        className="h-12 glass-card border-white/30 font-serif"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </Button>
+                    </div>
                     {listing.likes_count > 0 && (
                       <p className="text-xs sm:text-sm text-foreground/50 mt-3 font-serif">
                         {listing.likes_count} {listing.likes_count === 1 ? 'person likes' : 'people like'} this
@@ -537,8 +574,38 @@ export function ListingPageClient({ id }: { id: string }) {
               )}
             </motion.div>
           </div>
+
+          {!isEditing && relatedListings.length > 0 && (
+            <section className="mt-8 sm:mt-12">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="font-serif text-2xl font-bold">Related PCs</h2>
+                <Link href="/browse" className="font-serif text-sm font-semibold text-primary hover:underline">
+                  View all
+                </Link>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedListings.map((item) => (
+                  <ListingCard key={item.id} listing={item} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </main>
+
+      {!isEditing && listing.facebook_url && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/60 bg-white/85 px-3 py-3 shadow-[0_-12px_40px_rgba(80,55,140,0.12)] backdrop-blur-xl md:hidden">
+          <div className="mx-auto flex max-w-6xl items-center gap-3">
+            <p className="min-w-0 flex-1 font-serif text-lg font-bold text-foreground">{formatPrice(Number(listing.price))}</p>
+            <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+              <Button className="h-11 border-0 neon-gradient-bg px-5 font-serif text-sm text-white">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Message Seller
+              </Button>
+            </a>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

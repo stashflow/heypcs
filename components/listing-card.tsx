@@ -6,7 +6,15 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
-import { Heart, ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Heart, ChevronLeft, ChevronRight, Play, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { type ListingWithImages } from '@/lib/db'
 import { useLikes } from '@/hooks/use-likes'
@@ -19,6 +27,8 @@ interface ListingCardProps {
   showSoldButton?: boolean
 }
 
+type ListingStatus = 'available' | 'pending' | 'sold'
+
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(price)
 
@@ -26,6 +36,7 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHoveringVideo, setIsHoveringVideo] = useState(false)
   const [isMarkingSold, setIsMarkingSold] = useState(false)
+  const [isDuplicating, setIsDuplicating] = useState(false)
   const [dragStartX, setDragStartX] = useState(0)
   const { isLiked, toggleLike } = useLikes()
 
@@ -35,6 +46,12 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
   const currentItem = media[currentIndex]
   const isYoutube = currentItem?.media_type === 'youtube'
   const ytId = isYoutube ? getYoutubeId(currentItem.image_url) : null
+  const status = (listing.listing_status || (listing.is_sold ? 'sold' : 'available')) as ListingStatus
+  const statusStyles = {
+    available: 'bg-emerald-500 text-white border-transparent',
+    pending: 'bg-amber-500 text-white border-transparent',
+    sold: 'bg-black/70 text-white border-transparent',
+  } satisfies Record<ListingStatus, string>
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -43,15 +60,13 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
     onLikeChange?.()
   }
 
-  const handleMarkSold = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const updateStatus = async (nextStatus: ListingStatus) => {
     setIsMarkingSold(true)
     try {
       const res = await fetch(`/api/listings/${listing.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_sold: true }),
+        body: JSON.stringify({ listing_status: nextStatus }),
       })
       if (res.ok) {
         onSoldChange?.()
@@ -60,6 +75,22 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
       console.error('Error marking as sold:', error)
     } finally {
       setIsMarkingSold(false)
+    }
+  }
+
+  const duplicateListing = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDuplicating(true)
+    try {
+      const res = await fetch(`/api/listings/${listing.id}/duplicate`, { method: 'POST' })
+      if (res.ok) {
+        onSoldChange?.()
+      }
+    } catch (error) {
+      console.error('Error duplicating listing:', error)
+    } finally {
+      setIsDuplicating(false)
     }
   }
 
@@ -104,9 +135,9 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
             onTouchStart={hasMultiple ? handleDragStart : undefined}
             onTouchEnd={hasMultiple ? handleDragEnd : undefined}
           >
-            {listing.is_sold && (
+            {status !== 'available' && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-                <span className="font-serif text-3xl font-bold text-white">SOLD</span>
+                <span className="font-serif text-3xl font-bold text-white">{status === 'sold' ? 'SOLD' : 'PENDING'}</span>
               </div>
             )}
             {media.length > 0 ? (
@@ -181,21 +212,25 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
             >
               <Heart className={cn('h-4 w-4 transition-colors', liked ? 'fill-red-500 text-red-500' : 'text-foreground/60')} />
             </Button>
+
+            <Badge className={cn('absolute left-3 top-3 z-10 rounded-full font-serif capitalize', statusStyles[status])}>
+              {status}
+            </Badge>
           </div>
 
           {/* Info */}
           <div className="p-4 flex flex-col gap-2 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-serif text-base font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+            <div className="space-y-1">
+              <h3 className="font-serif text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                 {listing.title}
               </h3>
-              <span className="font-serif text-lg font-bold neon-gradient-text whitespace-nowrap">
+              <span className="block font-serif text-lg font-bold neon-gradient-text">
                 {formatPrice(Number(listing.price))}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5 min-w-0">
-              {listing.cpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.cpu}</span>}
               {listing.gpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.gpu}</span>}
+              {listing.cpu && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full truncate max-w-[calc(50%-4px)]">{listing.cpu}</span>}
               {listing.ram && <span className="text-xs text-foreground/60 bg-white/50 border border-white/30 px-2 py-0.5 rounded-full">{listing.ram}</span>}
             </div>
             {listing.likes_count > 0 && (
@@ -205,15 +240,28 @@ export function ListingCard({ listing, onLikeChange, onSoldChange, showSoldButto
             )}
 
             {showSoldButton && (
-              <Button
-                onClick={handleMarkSold}
-                disabled={isMarkingSold}
-                variant={listing.is_sold ? 'default' : 'outline'}
-                size="sm"
-                className={`mt-2 font-serif w-full ${listing.is_sold ? 'neon-gradient-bg text-white border-0' : 'border-white/30'}`}
-              >
-                {isMarkingSold ? '...' : (listing.is_sold ? '✓ Sold' : 'Mark as Sold')}
-              </Button>
+              <div className="mt-2 grid grid-cols-[1fr_auto] gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
+                <Select value={status} onValueChange={(value) => updateStatus(value as ListingStatus)} disabled={isMarkingSold}>
+                  <SelectTrigger className="h-9 w-full glass-card border-white/30 font-serif">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="sold">Sold</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={duplicateListing}
+                  disabled={isDuplicating}
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 glass-card border-white/30"
+                  title="Duplicate listing"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
         </GlassCard>

@@ -37,11 +37,15 @@ export default function SellPage() {
     storage: '',
     os: '',
     facebook_url: '',
+    location_city: 'Marietta',
+    location_zip: '30067',
+    is_mobile: true,
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value, type } = e.target
+    const checked = type === 'checkbox' && 'checked' in e.target ? e.target.checked : undefined
+    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -225,6 +229,26 @@ export default function SellPage() {
                   <Input id="facebook_url" name="facebook_url" type="url" placeholder="https://www.facebook.com/marketplace/item/..." value={formData.facebook_url} onChange={handleInputChange} className="pl-10 glass-card border-white/20 font-serif" />
                 </div>
               </div>
+              <div className="grid gap-4 pt-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="location_city" className="font-serif">Location</Label>
+                  <Input id="location_city" name="location_city" value={formData.location_city} onChange={handleInputChange} className="glass-card border-white/20 font-serif" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location_zip" className="font-serif">ZIP</Label>
+                  <Input id="location_zip" name="location_zip" value={formData.location_zip} onChange={handleInputChange} className="glass-card border-white/20 font-serif" />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 pt-2 font-serif text-sm text-foreground/70">
+                <input
+                  type="checkbox"
+                  name="is_mobile"
+                  checked={formData.is_mobile}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 rounded border-white/30"
+                />
+                Mobile around Marietta / 30067
+              </label>
             </GlassCard>
 
             <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-base neon-gradient-bg text-white border-0 font-serif">
