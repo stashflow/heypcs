@@ -32,10 +32,7 @@ import {
   MemoryStick,
   HardDrive,
   Monitor,
-  ShieldCheck,
-  BadgeCheck,
   MessageCircle,
-  Sparkles,
 } from 'lucide-react'
 import useSWR from 'swr'
 import { type ListingWithImages } from '@/lib/db'
@@ -204,55 +201,44 @@ export function ListingPageClient({ id }: { id: string }) {
   const specFields = [
     {
       key: 'cpu',
-      label: 'Processor',
-      shortLabel: 'CPU',
+      label: 'CPU',
       icon: Cpu,
       accent: 'from-sky-500 to-blue-600',
     },
     {
       key: 'gpu',
-      label: 'Graphics',
-      shortLabel: 'GPU',
+      label: 'GPU',
       icon: CircuitBoard,
       accent: 'from-violet-500 to-fuchsia-500',
     },
     {
       key: 'ram',
-      label: 'Memory',
-      shortLabel: 'RAM',
+      label: 'RAM',
       icon: MemoryStick,
       accent: 'from-emerald-500 to-teal-500',
     },
     {
       key: 'storage',
       label: 'Storage',
-      shortLabel: 'SSD',
       icon: HardDrive,
       accent: 'from-amber-500 to-orange-500',
     },
     {
       key: 'os',
-      label: 'Operating System',
-      shortLabel: 'OS',
+      label: 'OS',
       icon: Monitor,
       accent: 'from-slate-600 to-zinc-800',
     },
   ] as const
 
   const specs = specFields.filter((s) => listing[s.key])
-  const highlightSpecs = specFields.filter((s) => ['gpu', 'cpu', 'ram'].includes(s.key) && listing[s.key])
-  const trustItems = [
-    { icon: ShieldCheck, label: 'Tested build' },
-    { icon: BadgeCheck, label: 'Verified specs' },
-    { icon: MessageCircle, label: 'Facebook ready' },
-  ]
 
   return (
     <div className="min-h-screen relative overflow-x-clip">
       <GradientBlobs />
       <Navbar />
 
-      <main className="px-3 pb-28 pt-4 sm:px-4 sm:py-8">
+      <main className="px-3 py-4 sm:px-4 sm:py-8">
         <div className="max-w-6xl mx-auto min-w-0">
 
           {/* Back + Admin Controls */}
@@ -470,51 +456,20 @@ export function ListingPageClient({ id }: { id: string }) {
                   </div>
                 ) : (
                   <>
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/70 bg-emerald-50/80 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        Available now
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/50 bg-white/55 px-2.5 py-1 text-xs font-medium text-foreground/65">
-                        <Sparkles className="h-3 w-3 text-primary" />
-                        Custom gaming PC
-                      </span>
-                    </div>
                     <div className="flex min-w-0 items-start justify-between gap-3 mb-3">
                       <h1 className="min-w-0 flex-1 break-words font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">{listing.title}</h1>
                     </div>
-                    <div className="font-serif text-2xl sm:text-3xl font-bold neon-gradient-text mb-4 sm:mb-6">
+                    <div className="font-serif text-2xl sm:text-3xl font-bold neon-gradient-text mb-4">
                       {formatPrice(Number(listing.price))}
                     </div>
-                    {highlightSpecs.length > 0 && (
-                      <div className="mb-4 grid grid-cols-3 gap-2">
-                        {highlightSpecs.map(({ key, shortLabel, icon: Icon }) => (
-                          <div key={key} className="min-w-0 rounded-xl border border-white/40 bg-white/45 px-2.5 py-2">
-                            <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-foreground/45">
-                              <Icon className="h-3.5 w-3.5" />
-                              {shortLabel}
-                            </div>
-                            <p className="truncate font-serif text-sm font-semibold text-foreground">{listing[key]}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     {listing.facebook_url && (
                       <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer">
-                        <Button className="h-12 w-full border-0 neon-gradient-bg font-serif text-base text-white shadow-lg shadow-purple-200/40 transition-shadow hover:shadow-purple-300/50 sm:h-13">
+                        <Button className="h-12 w-full border-0 neon-gradient-bg font-serif text-base text-white shadow-lg shadow-purple-200/40 transition-shadow hover:shadow-purple-300/50">
                           <MessageCircle className="h-4 w-4 mr-2" />
                           Message on Facebook
                         </Button>
                       </a>
                     )}
-                    <div className="mt-4 grid grid-cols-3 gap-2">
-                      {trustItems.map(({ icon: Icon, label }) => (
-                        <div key={label} className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border border-white/35 bg-white/35 px-2 py-2 text-center">
-                          <Icon className="h-4 w-4 text-primary" />
-                          <span className="text-[11px] font-medium leading-tight text-foreground/60">{label}</span>
-                        </div>
-                      ))}
-                    </div>
                     {listing.likes_count > 0 && (
                       <p className="text-xs sm:text-sm text-foreground/50 mt-3 font-serif">
                         {listing.likes_count} {listing.likes_count === 1 ? 'person likes' : 'people like'} this
@@ -525,16 +480,8 @@ export function ListingPageClient({ id }: { id: string }) {
               </GlassCard>
 
               {/* Specs */}
-              <GlassCard className="overflow-hidden p-4 sm:p-6">
-                <div className="mb-4 flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="font-serif text-xl font-bold sm:text-2xl">Specifications</h2>
-                    <p className="mt-1 text-sm text-foreground/50">The parts buyers care about most, at a glance.</p>
-                  </div>
-                  <div className="hidden rounded-full border border-white/40 bg-white/45 px-3 py-1 text-xs font-semibold text-foreground/55 sm:block">
-                    {specs.length} listed
-                  </div>
-                </div>
+              <GlassCard className="p-4 sm:p-6">
+                <h2 className="font-serif text-xl font-bold mb-4 sm:text-2xl">Specifications</h2>
                 {isEditing ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {specFields.map(({ key, label }) => (
@@ -551,31 +498,17 @@ export function ListingPageClient({ id }: { id: string }) {
                   </div>
                 ) : specs.length > 0 ? (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {specs.map(({ key, label, shortLabel, icon: Icon, accent }) => (
+                    {specs.map(({ key, label, icon: Icon, accent }) => (
                       <div
                         key={label}
-                        className={cn(
-                          'group relative overflow-hidden rounded-2xl border border-white/45 bg-white/45 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white/60 hover:shadow-md',
-                          key === 'gpu' && 'sm:col-span-2'
-                        )}
+                        className="flex items-center gap-3 rounded-2xl border border-white/40 bg-white/40 p-3.5"
                       >
-                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r opacity-90" />
-                        <div className={cn('absolute inset-x-0 top-0 h-1 bg-gradient-to-r', accent)} />
-                        <div className="flex items-start gap-3">
-                          <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm', accent)}>
-                            <Icon className="h-5 w-5" />
-                          </div>
+                        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm', accent)}>
+                          <Icon className="h-5 w-5" />
+                        </div>
                         <div className="min-w-0">
-                            <div className="mb-1 flex items-center gap-2">
-                              <p className="text-xs font-semibold uppercase tracking-wide text-foreground/45">{shortLabel}</p>
-                              <span className="h-1 w-1 rounded-full bg-foreground/20" />
-                              <p className="text-xs text-foreground/45">{label}</p>
-                            </div>
-                            <p className="break-words font-serif text-lg font-bold leading-tight text-foreground">{listing[key]}</p>
-                            {key === 'gpu' && (
-                              <p className="mt-1 text-xs text-foreground/50">Primary gaming performance driver</p>
-                            )}
-                          </div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/45">{label}</p>
+                          <p className="break-words font-serif text-base font-semibold leading-tight text-foreground">{listing[key]}</p>
                         </div>
                       </div>
                     ))}
@@ -606,23 +539,6 @@ export function ListingPageClient({ id }: { id: string }) {
           </div>
         </div>
       </main>
-
-      {!isEditing && listing.facebook_url && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/60 bg-white/80 px-3 py-3 shadow-[0_-12px_40px_rgba(80,55,140,0.12)] backdrop-blur-xl md:hidden">
-          <div className="mx-auto flex max-w-6xl items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-serif text-lg font-bold leading-none text-foreground">{formatPrice(Number(listing.price))}</p>
-              <p className="mt-1 truncate text-xs text-foreground/50">Ask if this PC is still available</p>
-            </div>
-            <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
-              <Button className="h-11 border-0 neon-gradient-bg px-5 font-serif text-sm text-white">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Message
-              </Button>
-            </a>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>
