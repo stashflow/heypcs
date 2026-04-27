@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { AuthModal } from '@/components/auth-modal'
-import { ADMIN_EMAIL } from '@/lib/auth'
+import { ADMIN_EMAIL } from '@/lib/constants'
 
 export function Navbar() {
   const { user, signOut, isLoading } = useAuth()

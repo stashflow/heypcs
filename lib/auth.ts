@@ -2,12 +2,7 @@ import { sql, type User } from './db'
 import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'crypto'
-
-export const ADMIN_EMAIL = 'ejdarkbark17@gmail.com'
-
-export function isAdmin(email: string): boolean {
-  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase()
-}
+export { ADMIN_EMAIL, isAdmin } from './constants'
 
 const SESSION_COOKIE_NAME = 'heypcs_session'
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days

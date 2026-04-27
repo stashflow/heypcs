@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Footer } from '@/components/footer'
 import { ImageUpload } from '@/components/image-upload'
 import { useAuth } from '@/components/providers/auth-provider'
-import { ADMIN_EMAIL } from '@/lib/auth'
+import { ADMIN_EMAIL } from '@/lib/constants'
 import {
   Loader2,
   DollarSign,
