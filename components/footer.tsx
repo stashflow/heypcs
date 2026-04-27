@@ -23,22 +23,17 @@ export function Footer() {
                 </div>
               </Link>
               <p className="text-foreground/55 max-w-sm text-sm leading-relaxed">
-                The premier marketplace for custom PC builds. Find your perfect machine or sell your creation.
+                Curated custom PC builds you can trust. Find your perfect machine.
               </p>
             </div>
 
             {/* Links */}
             <div>
-              <h4 className="font-serif text-lg font-semibold mb-4">Marketplace</h4>
+              <h4 className="font-serif text-lg font-semibold mb-4">Explore</h4>
               <ul className="space-y-3 text-foreground/55 text-sm">
                 <li>
                   <Link href="/browse" className="hover:text-foreground transition-colors">
                     Browse PCs
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sell" className="hover:text-foreground transition-colors">
-                    Sell a PC
                   </Link>
                 </li>
                 <li>

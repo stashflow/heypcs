@@ -52,16 +52,16 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-lg sm:text-xl text-foreground/55 max-w-xl mx-auto mb-10 text-pretty leading-relaxed"
         >
-          High-performance custom builds from real sellers.
-          No scams — just quality machines.
+          High-performance custom builds you can trust.
+          Quality machines, curated with care.
         </motion.p>
 
-        {/* CTAs */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.55 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          className="flex justify-center"
         >
           <Link href="/browse">
             <Button
@@ -69,15 +69,6 @@ export function HeroSection() {
               className="neon-gradient-bg text-white border-0 h-13 px-10 font-serif text-lg rounded-2xl shadow-lg hover:shadow-purple-200 transition-shadow"
             >
               Browse PCs
-            </Button>
-          </Link>
-          <Link href="/sell">
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-13 px-10 font-serif text-lg glass-card border-white/40 hover:bg-white/20 rounded-2xl"
-            >
-              Sell Yours
             </Button>
           </Link>
         </motion.div>

@@ -32,7 +32,7 @@ export function FeaturedListings() {
               Featured <span className="neon-gradient-text">Builds</span>
             </h2>
             <p className="text-foreground/55 mt-2 text-base">
-              Hand-picked high-performance PCs from our marketplace
+              Hand-picked high-performance custom builds
             </p>
           </div>
           <Link href="/browse">
@@ -73,14 +73,9 @@ export function FeaturedListings() {
               animate={{ opacity: 1 }}
               className="col-span-full text-center py-16"
             >
-              <p className="text-lg text-muted-foreground mb-4">
-                No listings yet. Be the first to sell a PC!
+              <p className="font-serif text-lg text-foreground/50">
+                No PCs available yet. Check back soon!
               </p>
-              <Link href="/sell">
-                <Button className="neon-gradient-bg text-white border-0">
-                  Create Listing
-                </Button>
-              </Link>
             </motion.div>
           )}
         </div>
