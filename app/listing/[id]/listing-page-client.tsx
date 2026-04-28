@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -57,6 +57,9 @@ export function ListingPageClient({ id }: { id: string }) {
   const [isSaving, setIsSaving] = useState(false)
   const [editForm, setEditForm] = useState<Partial<ListingWithImages> & { mediaItems?: MediaItem[] }>({})
   const [isPlayingVideo, setIsPlayingVideo] = useState(false)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [lightboxZoom, setLightboxZoom] = useState(1)
+  const pinchDistanceRef = useRef<number | null>(null)
 
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
 
@@ -114,12 +117,14 @@ export function ListingPageClient({ id }: { id: string }) {
     if (!media.length) return
     setCurrentIndex((i) => (i - 1 + media.length) % media.length)
     setIsPlayingVideo(false)
+    setLightboxZoom(1)
   }
 
   const showNextMedia = () => {
     if (!media.length) return
     setCurrentIndex((i) => (i + 1) % media.length)
     setIsPlayingVideo(false)
+    setLightboxZoom(1)
   }
 
   const handleGalleryDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -136,6 +141,81 @@ export function ListingPageClient({ id }: { id: string }) {
       showPreviousMedia()
     }
   }
+
+  const openLightbox = () => {
+    if (!media.length) return
+    setIsPlayingVideo(false)
+    setLightboxZoom(1)
+    setIsLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false)
+    setLightboxZoom(1)
+    pinchDistanceRef.current = null
+  }
+
+  const handleLightboxDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!hasMultiple || lightboxZoom > 1.05) return
+
+    const swipeDistance = info.offset.x
+    const swipeVelocity = info.velocity.x
+    const swipeThreshold = 60
+    const velocityThreshold = 500
+
+    if (swipeDistance < -swipeThreshold || swipeVelocity < -velocityThreshold) {
+      showNextMedia()
+    } else if (swipeDistance > swipeThreshold || swipeVelocity > velocityThreshold) {
+      showPreviousMedia()
+    }
+  }
+
+  const getTouchDistance = (touches: React.TouchList) => {
+    const [first, second] = [touches[0], touches[1]]
+    return Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY)
+  }
+
+  const handleLightboxTouchStart = (event: React.TouchEvent) => {
+    if (event.touches.length === 2) {
+      pinchDistanceRef.current = getTouchDistance(event.touches)
+    }
+  }
+
+  const handleLightboxTouchMove = (event: React.TouchEvent) => {
+    if (event.touches.length !== 2 || !pinchDistanceRef.current) return
+
+    event.preventDefault()
+    const nextDistance = getTouchDistance(event.touches)
+    const scaleChange = nextDistance / pinchDistanceRef.current
+    pinchDistanceRef.current = nextDistance
+    setLightboxZoom((zoom) => Math.min(3, Math.max(1, zoom * scaleChange)))
+  }
+
+  const handleLightboxWheel = (event: React.WheelEvent) => {
+    if (currentItem?.media_type === 'youtube') return
+
+    event.preventDefault()
+    const direction = event.deltaY > 0 ? -0.15 : 0.15
+    setLightboxZoom((zoom) => Math.min(3, Math.max(1, zoom + direction)))
+  }
+
+  useEffect(() => {
+    if (!isLightboxOpen) return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeLightbox()
+      if (event.key === 'ArrowLeft') showPreviousMedia()
+      if (event.key === 'ArrowRight') showNextMedia()
+    }
+
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [isLightboxOpen, media.length])
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -359,7 +439,8 @@ export function ListingPageClient({ id }: { id: string }) {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              className="absolute inset-0"
+                              className="absolute inset-0 cursor-zoom-in"
+                              onClick={openLightbox}
                             >
                               <Image
                                 src={currentItem.image_url}
@@ -597,6 +678,113 @@ export function ListingPageClient({ id }: { id: string }) {
           )}
         </div>
       </main>
+
+      <AnimatePresence>
+        {isLightboxOpen && currentItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 text-white"
+          >
+            <button
+              type="button"
+              onClick={closeLightbox}
+              aria-label="Close full screen image"
+              className="absolute right-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-md transition-colors hover:bg-white/20"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            {media.length > 1 && (
+              <div className="absolute left-4 top-4 z-30 rounded-full bg-white/12 px-3 py-1.5 font-serif text-sm text-white backdrop-blur-md">
+                {currentIndex + 1} / {media.length}
+              </div>
+            )}
+
+            <motion.div
+              className="flex h-full w-full touch-none items-center justify-center overflow-hidden px-2 py-16 sm:px-12"
+              drag={lightboxZoom > 1.05 ? true : hasMultiple ? 'x' : false}
+              dragConstraints={lightboxZoom > 1.05 ? undefined : { left: 0, right: 0 }}
+              dragElastic={lightboxZoom > 1.05 ? 0.08 : 0.14}
+              dragMomentum={false}
+              onDragEnd={handleLightboxDragEnd}
+              onTouchStart={handleLightboxTouchStart}
+              onTouchMove={handleLightboxTouchMove}
+              onTouchEnd={() => { pinchDistanceRef.current = null }}
+              onWheel={handleLightboxWheel}
+              onDoubleClick={() => setLightboxZoom((zoom) => zoom > 1 ? 1 : 2)}
+            >
+              {currentItem.media_type === 'youtube' && ytId ? (
+                <div className="relative aspect-video w-full max-w-5xl overflow-hidden rounded-2xl bg-black">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
+                    className="absolute inset-0 h-full w-full"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <motion.div
+                  key={currentItem.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, scale: lightboxZoom }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className={cn(
+                    'relative h-full max-h-[calc(100svh-8rem)] w-full max-w-6xl',
+                    lightboxZoom > 1.05 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'
+                  )}
+                >
+                  <Image
+                    src={currentItem.image_url}
+                    alt={listing.title}
+                    fill
+                    className="object-contain"
+                    sizes="100vw"
+                    priority
+                  />
+                </motion.div>
+              )}
+            </motion.div>
+
+            {hasMultiple && (
+              <>
+                <button
+                  type="button"
+                  onClick={showPreviousMedia}
+                  aria-label="Previous image"
+                  className="absolute left-3 top-1/2 z-30 hidden -translate-y-1/2 rounded-full bg-white/12 p-3 text-white backdrop-blur-md transition-colors hover:bg-white/20 sm:block"
+                >
+                  <ChevronLeft className="h-7 w-7" />
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextMedia}
+                  aria-label="Next image"
+                  className="absolute right-3 top-1/2 z-30 hidden -translate-y-1/2 rounded-full bg-white/12 p-3 text-white backdrop-blur-md transition-colors hover:bg-white/20 sm:block"
+                >
+                  <ChevronRight className="h-7 w-7" />
+                </button>
+                <div className="absolute bottom-5 left-1/2 z-30 flex max-w-[80vw] -translate-x-1/2 gap-1.5 overflow-hidden">
+                  {media.map((item, index) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => { setCurrentIndex(index); setLightboxZoom(1); setIsPlayingVideo(false) }}
+                      aria-label={`View image ${index + 1}`}
+                      className={cn(
+                        'h-1.5 rounded-full transition-all',
+                        index === currentIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/45 hover:bg-white/75'
+                      )}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!isEditing && listing.facebook_url && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/60 bg-white/85 px-3 py-3 shadow-[0_-12px_40px_rgba(80,55,140,0.12)] backdrop-blur-xl md:hidden">
