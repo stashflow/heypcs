@@ -579,7 +579,7 @@ export function ListingPageClient({ id }: { id: string }) {
                         <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer">
                           <Button className="h-12 w-full border-0 neon-gradient-bg font-serif text-base text-white shadow-lg shadow-purple-200/40 transition-shadow hover:shadow-purple-300/50">
                             <MessageCircle className="h-4 w-4 mr-2" />
-                            Message Seller
+                            Buy on Facebook
                           </Button>
                         </a>
                       )}
@@ -793,7 +793,7 @@ export function ListingPageClient({ id }: { id: string }) {
             <a href={listing.facebook_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
               <Button className="h-11 border-0 neon-gradient-bg px-5 font-serif text-sm text-white">
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Message Seller
+                Buy on Facebook
               </Button>
             </a>
           </div>
