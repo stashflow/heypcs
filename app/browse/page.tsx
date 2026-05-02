@@ -25,6 +25,7 @@ export default function BrowsePage() {
 
   const buildQueryString = useCallback((f: Filters) => {
     const params = new URLSearchParams()
+    if (f.search) params.set('search', f.search)
     if (f.minPrice) params.set('minPrice', f.minPrice)
     if (f.maxPrice) params.set('maxPrice', f.maxPrice)
     if (f.cpu) params.set('cpu', f.cpu)

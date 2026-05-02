@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
   try {
     await ensureListingColumns()
     const searchParams = request.nextUrl.searchParams
+    const search = searchParams.get('search')
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
     const cpu = searchParams.get('cpu')
@@ -43,6 +44,27 @@ export async function GET(request: NextRequest) {
     // By default, don't show sold items unless explicitly requested
     if (!includeSold) {
       conditions.push(`COALESCE(l.listing_status, CASE WHEN l.is_sold THEN 'sold' ELSE 'available' END) != 'sold'`)
+    }
+
+    // Smart search: searches across title, description, and all spec fields
+    // Splits query into words and matches ANY word in ANY field (fuzzy OR matching)
+    if (search && search.trim()) {
+      const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(Boolean)
+      const searchConditions = searchTerms.map(() => {
+        const termIdx = idx++
+        return `(
+          LOWER(COALESCE(l.title, '')) LIKE $${termIdx} OR
+          LOWER(COALESCE(l.description, '')) LIKE $${termIdx} OR
+          LOWER(COALESCE(l.cpu, '')) LIKE $${termIdx} OR
+          LOWER(COALESCE(l.gpu, '')) LIKE $${termIdx} OR
+          LOWER(COALESCE(l.ram, '')) LIKE $${termIdx} OR
+          LOWER(COALESCE(l.storage, '')) LIKE $${termIdx} OR
+          LOWER(COALESCE(l.os, '')) LIKE $${termIdx}
+        )`
+      })
+      // All terms must match somewhere (AND between terms, OR between fields)
+      conditions.push(`(${searchConditions.join(' AND ')})`)
+      searchTerms.forEach(term => params.push(`%${term}%`))
     }
 
     if (minPrice) { conditions.push(`l.price >= $${idx++}`); params.push(parseFloat(minPrice)) }
