@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 
 export function HeroSection() {
   return (
-    <section className="relative pt-16 pb-24 px-4 overflow-hidden">
+    <section className="relative pt-16 pb-24 px-4">
       <div className="max-w-5xl mx-auto text-center">
 
         {/* Floating logo — the full hand + text mark */}
@@ -22,8 +22,8 @@ export function HeroSection() {
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             className="relative w-72 h-48 sm:w-96 sm:h-60 drop-shadow-2xl"
           >
-            {/* Soft glow behind logo */}
-            <div className="absolute inset-0 neon-gradient-bg opacity-20 blur-3xl rounded-full scale-75" />
+            {/* Soft glow behind logo - extends into next section */}
+            <div className="absolute -inset-16 neon-gradient-bg opacity-25 blur-3xl rounded-full scale-125" />
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png"
               alt="Hey PC's"
