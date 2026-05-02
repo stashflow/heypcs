@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export function GradientBlobs() {
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div className="fixed inset-0 pointer-events-none -z-10">
       {/* Blue blob - top left */}
       <motion.div
         className="absolute -top-40 -left-40 w-96 h-96 rounded-full opacity-40 blur-3xl animate-float"

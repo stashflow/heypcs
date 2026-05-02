@@ -16,6 +16,7 @@ import {
 import { SlidersHorizontal, X, Search } from 'lucide-react'
 
 export interface Filters {
+  search?: string
   minPrice?: string
   maxPrice?: string
   cpu?: string
@@ -54,8 +55,33 @@ export function FilterBar({ filters, onFiltersChange, onSearch, specOptions, isA
     specOptions.gpus.length > 0 ||
     specOptions.rams.length > 0
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearch()
+    }
+  }
+
   return (
     <GlassCard className="p-4">
+      {/* Search bar - always visible */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+          <Input
+            type="text"
+            placeholder="Search PCs by name, specs, or description..."
+            value={filters.search || ''}
+            onChange={(e) => updateFilter('search', e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="pl-10 glass-card border-white/20 font-serif h-11"
+          />
+        </div>
+        <Button onClick={onSearch} className="neon-gradient-bg text-white border-0 font-serif h-11 px-6">
+          <Search className="h-4 w-4 mr-2" />
+          Search
+        </Button>
+      </div>
+
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
@@ -71,18 +97,12 @@ export function FilterBar({ filters, onFiltersChange, onSearch, specOptions, isA
           )}
         </Button>
 
-        <div className="flex items-center gap-2">
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="font-serif">
-              <X className="h-4 w-4 mr-1" />
-              Clear
-            </Button>
-          )}
-          <Button onClick={onSearch} className="neon-gradient-bg text-white border-0 font-serif">
-            <Search className="h-4 w-4 mr-2" />
-            Search
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="font-serif">
+            <X className="h-4 w-4 mr-1" />
+            Clear
           </Button>
-        </div>
+        )}
       </div>
 
       <AnimatePresence>

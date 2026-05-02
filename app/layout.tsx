@@ -21,7 +21,7 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} | Custom Gaming PCs`,
+    default: `${SITE_NAME} | Computer Shop`,
     template: `%s | ${SITE_NAME}`,
   },
   description: DEFAULT_DESCRIPTION,
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     apple: '/logo.jpeg',
   },
   openGraph: {
-    title: `${SITE_NAME} | Custom Gaming PCs`,
+    title: `${SITE_NAME} | Computer Shop`,
     description: DEFAULT_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -46,18 +46,18 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: absoluteUrl('/logo.jpeg'),
+        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png',
         width: 1200,
         height: 630,
-        alt: `${SITE_NAME} - Custom Gaming PC Marketplace`,
+        alt: `${SITE_NAME} - Computer Shop`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} | Custom Gaming PCs`,
+    title: `${SITE_NAME} | Computer Shop`,
     description: DEFAULT_DESCRIPTION,
-    images: [absoluteUrl('/logo.jpeg')],
+    images: ['https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png'],
   },
   robots: {
     index: true,
