@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: absoluteUrl('/og-image.jpg'),
+        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png',
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} - Computer Shop`,
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${SITE_NAME} | Computer Shop`,
     description: DEFAULT_DESCRIPTION,
-    images: [absoluteUrl('/og-image.jpg')],
+    images: ['https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IxCTBv0xB3hLnCdoMfDy6xIGlNaYbf.png'],
   },
   robots: {
     index: true,
